@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Flappy Bird Pro | Edición Realista Nginx</title>
+  <title>Flappy Bird VIP | Tienda de Paga & Skins Nginx</title>
   <style>
     :root {
       --bg-dark: #090d16;
-      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-bg: rgba(15, 23, 42, 0.9);
       --accent: #38bdf8;
       --accent-gold: #fbbf24;
+      --accent-emerald: #10b981;
+      --accent-ruby: #f43f5e;
       --text-light: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -31,77 +33,92 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 0.75rem;
+      padding: 0.5rem;
       overflow-x: hidden;
     }
 
-    .top-banner {
+    /* BARRA SUPERIOR CON SALDO DE GEMAS Y ACCESO A TIENDA */
+    .top-navbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      max-width: 440px;
-      margin-bottom: 0.75rem;
+      max-width: 430px;
+      margin-bottom: 0.5rem;
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 0.5rem 1rem;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 0.5rem 0.85rem;
       border-radius: 9999px;
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
     }
 
-    .server-status {
+    .gem-pill {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #fda4af;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .gem-pill:hover {
+      transform: scale(1.04);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-shop {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      border: none;
+      font-weight: 800;
       font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--accent);
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
     }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: #22c55e;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #22c55e;
-      animation: pulse 1.8s infinite;
+    .btn-shop:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.6);
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-
-    .audio-btn {
+    .btn-icon {
       background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.3);
       color: var(--accent);
-      padding: 0.25rem 0.65rem;
+      padding: 0.35rem 0.6rem;
       border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.8rem;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      transition: all 0.2s ease;
     }
 
-    .audio-btn:hover {
-      background: rgba(56, 189, 248, 0.25);
-    }
-
-    .canvas-container {
+    /* CONTENEDOR DEL JUEGO */
+    .game-wrapper {
       position: relative;
       width: 100%;
-      max-width: 420px;
+      max-width: 410px;
       border-radius: 20px;
       overflow: hidden;
       border: 3px solid rgba(56, 189, 248, 0.4);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
-                  0 0 35px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.25);
       background: #000;
       touch-action: none;
     }
@@ -113,441 +130,623 @@
       background: #38bdf8;
     }
 
-    .controls-hint {
-      display: flex;
-      gap: 1rem;
-      margin-top: 0.75rem;
-      font-size: 0.82rem;
+    /* CONTROLES / PIE */
+    .footer-bar {
+      margin-top: 0.5rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
     }
 
     .kbd {
       background: #1e293b;
       color: #38bdf8;
       border: 1px solid #334155;
-      padding: 0.15rem 0.5rem;
+      padding: 0.15rem 0.45rem;
       border-radius: 6px;
       font-weight: 700;
-      font-size: 0.78rem;
     }
 
-    .footer {
-      margin-top: 0.6rem;
-      font-size: 0.75rem;
-      color: #64748b;
+    /* MODAL DE TIENDA VIP */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .shop-modal {
+      background: #0f172a;
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      max-width: 440px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 1.25rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.2);
+      animation: modalSlide 0.25s ease-out;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .shop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.75rem;
+    }
+
+    .shop-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .close-btn {
+      background: #1e293b;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.25rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .shop-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .shop-tab {
+      flex: 1;
+      padding: 0.5rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.82rem;
+      border-radius: 10px;
+      cursor: pointer;
       text-align: center;
+    }
+
+    .shop-tab.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    .items-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .shop-item-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .shop-item-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      background: #24334a;
+    }
+
+    .item-preview {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      border: 1px solid #334155;
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-name {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #f8fafc;
+      margin-bottom: 0.2rem;
+    }
+
+    .item-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .btn-buy {
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      border: none;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+    }
+
+    .btn-buy:hover {
+      opacity: 0.9;
+    }
+
+    .btn-equipped {
+      background: #10b981;
+      cursor: default;
+    }
+
+    .btn-equip {
+      background: #334155;
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
+    }
+
+    /* MODAL DE CHECKOUT SIMULADO */
+    .checkout-modal {
+      background: #0f172a;
+      border: 2px solid #fbbf24;
+      border-radius: 20px;
+      max-width: 380px;
+      width: 100%;
+      padding: 1.5rem;
+      text-align: center;
+      animation: modalSlide 0.25s ease-out;
+    }
+
+    .checkout-badge {
+      display: inline-block;
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(251, 191, 36, 0.4);
     }
   </style>
 </head>
 <body>
 
-  <div class="top-banner">
-    <div class="server-status">
-      <span class="status-dot"></span>
-      <span>Nginx Live &bull; Real Physics Edition</span>
+  <!-- BARRA DE ACCIONES SUPERIOR -->
+  <div class="top-navbar">
+    <div class="gem-pill" id="gemCounterPill" title="Tus Gemas (Haz clic para comprar más)">
+      <span>💎</span>
+      <span id="gemCountText">25</span>
     </div>
-    <button class="audio-btn" id="audioToggle">
-      <span id="audioIcon">🔊</span> Sonido
-    </button>
+
+    <div class="nav-actions">
+      <button class="btn-shop" id="openShopBtn">
+        <span>🛒</span> TIENDA VIP
+      </button>
+      <button class="btn-icon" id="audioToggle">
+        <span id="audioIcon">🔊</span>
+      </button>
+    </div>
   </div>
 
-  <div class="canvas-container" id="canvasBox">
+  <!-- CONTENEDOR DEL LIENZO -->
+  <div class="game-wrapper" id="gameContainer">
     <canvas id="gameCanvas" width="400" height="600"></canvas>
   </div>
 
-  <div class="controls-hint">
-    <span><span class="kbd">ESPACIO</span> o <span class="kbd">TAP / CLIC</span> para aletear</span>
-    <span><span class="kbd">R</span> reiniciar</span>
+  <!-- PIE DE PÁGINA -->
+  <div class="footer-bar">
+    <div><span class="kbd">ESPACIO</span> o <span class="kbd">TAP / CLIC</span> para aletear &bull; <span class="kbd">R</span> reiniciar</div>
+    <div style="color: #64748b;">Flappy Bird VIP Monetizado &bull; Nginx Server EC2 AWS</div>
   </div>
 
-  <div class="footer">
-    DevOps Practice &bull; Desplegado en Ubuntu Server AWS con Nginx
+  <!-- MODAL DE TIENDA VIP -->
+  <div class="modal-overlay" id="shopModalOverlay">
+    <div class="shop-modal">
+      <div class="shop-header">
+        <div class="shop-title">
+          <span>🛒</span> Tienda VIP & Monedas
+        </div>
+        <button class="close-btn" id="closeShopBtn">&times;</button>
+      </div>
+
+      <div class="shop-tabs">
+        <button class="shop-tab active" data-tab="skins">Skins VIP</button>
+        <button class="shop-tab" data-tab="powerups">Poderes</button>
+        <button class="shop-tab" data-tab="gems">Comprar Gemas</button>
+      </div>
+
+      <!-- SECCIÓN SKINS -->
+      <div class="items-grid" id="skinsList"></div>
+
+      <!-- SECCIÓN POWER-UPS -->
+      <div class="items-grid" id="powerupsList" style="display: none;"></div>
+
+      <!-- SECCIÓN COMPRA DE GEMAS -->
+      <div class="items-grid" id="gemsList" style="display: none;"></div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CHECKOUT / PAGO -->
+  <div class="modal-overlay" id="checkoutOverlay">
+    <div class="checkout-modal">
+      <div class="checkout-badge">PASARELA DE PAGO SEGURA</div>
+      <h3 id="checkoutItemName" style="color: #fff; margin-bottom: 0.5rem; font-size: 1.25rem;">Pack de Gemas</h3>
+      <p id="checkoutItemDesc" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">Recibe 100 Gemas instantáneamente para tu cuenta.</p>
+      
+      <div style="background: #1e293b; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; border: 1px solid #334155; text-align: left;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+          <span style="color: #94a3b8;">Total a pagar:</span>
+          <span id="checkoutPrice" style="color: #4ade80; font-weight: 800; font-size: 1.1rem;">$0.99 USD</span>
+        </div>
+        <div style="font-size: 0.75rem; color: #64748b;">
+          💳 Simulación de tarjeta &bull; Aprobación instantánea
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button id="cancelCheckoutBtn" style="flex: 1; padding: 0.65rem; background: #334155; border: none; color: #fff; border-radius: 10px; font-weight: 700; cursor: pointer;">Cancelar</button>
+        <button id="confirmCheckoutBtn" style="flex: 2; padding: 0.65rem; background: linear-gradient(135deg, #10b981, #059669); border: none; color: #fff; border-radius: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">Pagar Ahora</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const audioBtn = document.getElementById('audioToggle');
-    const audioIcon = document.getElementById('audioIcon');
+    // ==========================================
+    // ESTADO PERSISTENTE (ECONOMÍA Y COMPRAS)
+    // ==========================================
+    let gems = parseInt(localStorage.getItem('flappy_gems') || '25', 10);
+    let activeSkin = localStorage.getItem('flappy_active_skin') || 'classic';
+    let ownedSkins = JSON.parse(localStorage.getItem('flappy_owned_skins') || '["classic"]');
+    let shieldsOwned = parseInt(localStorage.getItem('flappy_shields') || '1', 10);
+    let revivesOwned = parseInt(localStorage.getItem('flappy_revives') || '1', 10);
+    let highScore = parseInt(localStorage.getItem('flappy_vip_high') || '0', 10);
+
+    function saveEconomy() {
+      localStorage.setItem('flappy_gems', gems);
+      localStorage.setItem('flappy_active_skin', activeSkin);
+      localStorage.setItem('flappy_owned_skins', JSON.stringify(ownedSkins));
+      localStorage.setItem('flappy_shields', shieldsOwned);
+      localStorage.setItem('flappy_revives', revivesOwned);
+      document.getElementById('gemCountText').textContent = gems;
+    }
+    saveEconomy();
+
+    // Catálogo de Skins
+    const SKINS_DATA = [
+      { id: 'classic', name: 'Pájaro Clásico 🐤', icon: '🐤', desc: 'El intrépido original con plumas doradas.', price: 0, realPrice: '$0.00' },
+      { id: 'mecha', name: 'Cyber-Mecha 🤖', icon: '🤖', desc: 'Armadura de titanio, visor neón y propulsor de plasma azul.', price: 50, realPrice: '$0.99' },
+      { id: 'phoenix', name: 'Fénix de Fuego 🔥', icon: '🔥', desc: 'Ave mítica que arde con llamaradas y estela incandescente.', price: 120, realPrice: '$1.99' },
+      { id: 'king', name: 'Rey Pájaro Real 👑', icon: '👑', desc: 'Corona dorada con rubíes y capa de la realeza.', price: 200, realPrice: '$2.99' }
+    ];
+
+    // Catálogo de Power-ups
+    const POWERUPS_DATA = [
+      { id: 'shield', name: 'Escudo de Fuerza 🛡️', icon: '🛡️', desc: 'Protege contra 1 impacto mortal de tubería.', price: 10, realPrice: '$0.49' },
+      { id: 'revive', name: 'Ficha de Resurrección ❤️', icon: '❤️', desc: 'Permite revivir de inmediato al morir y continuar tu récord.', price: 15, realPrice: '$0.79' }
+    ];
+
+    // Paquetes de Gemas
+    const GEMS_PACKS = [
+      { id: 'pack_100', name: 'Bolsa de 100 💎', icon: '💎', desc: 'Ideal para comprar el Mecha Bird o revivir partidas.', gems: 100, priceUsd: '$0.99 USD' },
+      { id: 'pack_350', name: 'Cofre de 350 💎 (Popular)', icon: '💎', desc: 'Desbloquea el Fénix de Fuego y escudos de sobra.', gems: 350, priceUsd: '$2.49 USD' },
+      { id: 'pack_1000', name: 'Bóveda de 1000 💎 (VIP)', icon: '👑', desc: 'Acceso total a todas las skins y poderes ilimitados.', gems: 1000, priceUsd: '$4.99 USD' }
+    ];
 
     // ==========================================
-    // SISTEMA DE AUDIO REALISTA (Web Audio API)
+    // AUDIO SINTETIZADO (Web Audio API)
     // ==========================================
     let audioCtx = null;
     let soundEnabled = true;
 
     function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
+    const audioBtn = document.getElementById('audioToggle');
+    const audioIcon = document.getElementById('audioIcon');
     audioBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudio();
       soundEnabled = !soundEnabled;
       audioIcon.textContent = soundEnabled ? '🔊' : '🔇';
-      audioBtn.style.opacity = soundEnabled ? '1' : '0.6';
     });
 
-    function playWingWoosh() {
+    function playSound(type) {
       if (!soundEnabled || !audioCtx) return;
       try {
         const now = audioCtx.currentTime;
-        const bufferSize = audioCtx.sampleRate * 0.15;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.04));
-        }
-
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(450, now);
-        filter.frequency.exponentialRampToValueAtTime(180, now + 0.14);
-        filter.Q.value = 3.5;
-
-        const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(audioCtx.destination);
-        noise.start(now);
-      } catch (err) {}
-    }
-
-    function playScoreBell() {
-      if (!soundEnabled || !audioCtx) return;
-      try {
-        const now = audioCtx.currentTime;
-        [880, 1320, 1760].forEach((freq, idx) => {
+        if (type === 'flap') {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.03);
-          gain.gain.setValueAtTime(0.15 / (idx + 1), now + idx * 0.03);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.03 + 0.4);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now + idx * 0.03);
-          osc.stop(now + idx * 0.03 + 0.45);
-        });
-      } catch (err) {}
-    }
-
-    function playCrashSound() {
-      if (!soundEnabled || !audioCtx) return;
-      try {
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(140, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.35);
-        gain.gain.setValueAtTime(0.6, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.35);
-      } catch (err) {}
+          osc.frequency.setValueAtTime(450, now);
+          osc.frequency.exponentialRampToValueAtTime(750, now + 0.12);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now); osc.stop(now + 0.12);
+        } else if (type === 'score') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(784, now);
+          osc.frequency.setValueAtTime(1046, now + 0.08);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now); osc.stop(now + 0.22);
+        } else if (type === 'gem') {
+          // Tintineo de gema preciosa
+          [1318, 1760, 2093].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + i * 0.04);
+            gain.gain.setValueAtTime(0.2, now + i * 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.04 + 0.25);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now + i * 0.04); osc.stop(now + i * 0.04 + 0.25);
+          });
+        } else if (type === 'shield_break') {
+          // Rompimiento de escudo eléctrico
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(120, now + 0.3);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'kaching') {
+          // Sonido de caja registradora / compra exitosa
+          [987, 1318].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, now + i * 0.09);
+            gain.gain.setValueAtTime(0.3, now + i * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.09 + 0.4);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now + i * 0.09); osc.stop(now + i * 0.09 + 0.4);
+          });
+        } else if (type === 'crash') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.exponentialRampToValueAtTime(35, now + 0.35);
+          gain.gain.setValueAtTime(0.5, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now); osc.stop(now + 0.35);
+        }
+      } catch (e) {}
     }
 
     // ==========================================
-    // ESTADO DEL JUEGO Y CÁMARA
+    // INTERFAZ DE TIENDA Y MODALES
     // ==========================================
-    const STATES = { TITLE: 0, PLAYING: 1, DYING: 2, GAMEOVER: 3 };
+    const shopModalOverlay = document.getElementById('shopModalOverlay');
+    const checkoutOverlay = document.getElementById('checkoutOverlay');
+    const openShopBtn = document.getElementById('openShopBtn');
+    const closeShopBtn = document.getElementById('closeShopBtn');
+    const gemCounterPill = document.getElementById('gemCounterPill');
+
+    openShopBtn.addEventListener('click', () => { initAudio(); openShop('skins'); });
+    gemCounterPill.addEventListener('click', () => { initAudio(); openShop('gems'); });
+    closeShopBtn.addEventListener('click', () => { shopModalOverlay.classList.remove('active'); });
+
+    function openShop(defaultTab = 'skins') {
+      renderShopTabs();
+      switchTab(defaultTab);
+      shopModalOverlay.classList.add('active');
+    }
+
+    // Pestañas de la tienda
+    document.querySelectorAll('.shop-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        switchTab(tab.getAttribute('data-tab'));
+      });
+    });
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById('skinsList').style.display = tabName === 'skins' ? 'flex' : 'none';
+      document.getElementById('powerupsList').style.display = tabName === 'powerups' ? 'flex' : 'none';
+      document.getElementById('gemsList').style.display = tabName === 'gems' ? 'flex' : 'none';
+      renderShopTabs();
+    }
+
+    function renderShopTabs() {
+      // 1. Render Skins
+      const skinsList = document.getElementById('skinsList');
+      skinsList.innerHTML = SKINS_DATA.map(skin => {
+        const isOwned = ownedSkins.includes(skin.id);
+        const isEquipped = activeSkin === skin.id;
+
+        let actionBtn = '';
+        if (isEquipped) {
+          actionBtn = `<button class="btn-buy btn-equipped">✓ En uso</button>`;
+        } else if (isOwned) {
+          actionBtn = `<button class="btn-buy btn-equip" onclick="equipSkin('${skin.id}')">Equipar</button>`;
+        } else {
+          actionBtn = `<button class="btn-buy" onclick="buySkin('${skin.id}')">💎 ${skin.price}</button>`;
+        }
+
+        return `
+          <div class="shop-item-card">
+            <div class="item-preview">${skin.icon}</div>
+            <div class="item-info">
+              <div class="item-name">${skin.name}</div>
+              <div class="item-desc">${skin.desc}</div>
+            </div>
+            ${actionBtn}
+          </div>
+        `;
+      }).join('');
+
+      // 2. Render Powerups
+      const powerupsList = document.getElementById('powerupsList');
+      powerupsList.innerHTML = POWERUPS_DATA.map(p => {
+        const count = p.id === 'shield' ? shieldsOwned : revivesOwned;
+        return `
+          <div class="shop-item-card">
+            <div class="item-preview">${p.icon}</div>
+            <div class="item-info">
+              <div class="item-name">${p.name} <span style="color:#fbbf24; font-size:0.8rem;">(Tienes: ${count})</span></div>
+              <div class="item-desc">${p.desc}</div>
+            </div>
+            <button class="btn-buy" onclick="buyPowerup('${p.id}')">💎 ${p.price}</button>
+          </div>
+        `;
+      }).join('');
+
+      // 3. Render Gem Packs
+      const gemsList = document.getElementById('gemsList');
+      gemsList.innerHTML = GEMS_PACKS.map(g => `
+        <div class="shop-item-card" style="border-color: rgba(251, 191, 36, 0.4);">
+          <div class="item-preview" style="background: rgba(251, 191, 36, 0.15);">${g.icon}</div>
+          <div class="item-info">
+            <div class="item-name" style="color: #fde047;">${g.name}</div>
+            <div class="item-desc">${g.desc}</div>
+          </div>
+          <button class="btn-buy" style="background: linear-gradient(135deg, #f59e0b, #d97706);" onclick="openCheckout('${g.id}')">
+            ${g.priceUsd}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    window.equipSkin = function(skinId) {
+      activeSkin = skinId;
+      saveEconomy();
+      renderShopTabs();
+    };
+
+    window.buySkin = function(skinId) {
+      const skin = SKINS_DATA.find(s => s.id === skinId);
+      if (gems >= skin.price) {
+        gems -= skin.price;
+        ownedSkins.push(skinId);
+        activeSkin = skinId;
+        saveEconomy();
+        playSound('kaching');
+        renderShopTabs();
+      } else {
+        alert('¡No tienes suficientes Gemas! Compra un paquete de gemas para desbloquear esta Skin.');
+        switchTab('gems');
+      }
+    };
+
+    window.buyPowerup = function(powerupId) {
+      const p = POWERUPS_DATA.find(item => item.id === powerupId);
+      if (gems >= p.price) {
+        gems -= p.price;
+        if (powerupId === 'shield') shieldsOwned++;
+        else if (powerupId === 'revive') revivesOwned++;
+        saveEconomy();
+        playSound('kaching');
+        renderShopTabs();
+      } else {
+        alert('Gemas insuficientes. Consigue más en la pestaña de Gemas.');
+        switchTab('gems');
+      }
+    };
+
+    // Checkout Simulado
+    let pendingPack = null;
+    window.openCheckout = function(packId) {
+      pendingPack = GEMS_PACKS.find(p => p.id === packId);
+      document.getElementById('checkoutItemName').textContent = pendingPack.name;
+      document.getElementById('checkoutItemDesc').textContent = pendingPack.desc;
+      document.getElementById('checkoutPrice').textContent = pendingPack.priceUsd;
+      checkoutOverlay.classList.add('active');
+    };
+
+    document.getElementById('cancelCheckoutBtn').addEventListener('click', () => {
+      checkoutOverlay.classList.remove('active');
+    });
+
+    document.getElementById('confirmCheckoutBtn').addEventListener('click', () => {
+      if (pendingPack) {
+        gems += pendingPack.gems;
+        saveEconomy();
+        playSound('kaching');
+        checkoutOverlay.classList.remove('active');
+        alert(`¡Pago completado con éxito! Se han añadido +${pendingPack.gems} Gemas a tu cuenta.`);
+        renderShopTabs();
+      }
+    });
+
+    // ==========================================
+    // MOTOR DE JUEGO (CANVAS 60FPS)
+    // ==========================================
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const STATES = { TITLE: 0, PLAYING: 1, GAMEOVER: 2 };
     let gameState = STATES.TITLE;
     let score = 0;
-    let highScore = parseInt(localStorage.getItem('flappy_real_high') || '0', 10);
-    let totalPasses = 0;
+    let hasShieldActive = false;
+    let frames = 0;
+    let groundOffset = 0;
 
-    const camera = {
-      shake: 0,
-      applyShake() {
-        if (this.shake > 0) {
-          const rx = (Math.random() - 0.5) * this.shake;
-          const ry = (Math.random() - 0.5) * this.shake;
-          ctx.translate(rx, ry);
-          this.shake *= 0.88;
-          if (this.shake < 0.3) this.shake = 0;
-        }
-      }
+    // Botones interactivos en pantalla sobre Canvas
+    const uiButtons = {
+      reviveRect: { x: 60, y: 390, w: 280, h: 48 },
+      retryRect: { x: 60, y: 448, w: 280, h: 42 }
     };
 
-    // ==========================================
-    // SISTEMA DE PARTÍCULAS
-    // ==========================================
-    class Particle {
-      constructor(x, y, vx, vy, color, size, life, decay, isFeather = false) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.color = color;
-        this.size = size;
-        this.life = life;
-        this.maxLife = life;
-        this.decay = decay;
-        this.isFeather = isFeather;
-        this.rotation = Math.random() * Math.PI * 2;
-        this.rotSpeed = (Math.random() - 0.5) * 0.15;
-      }
-
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.rotation += this.rotSpeed;
-        if (this.isFeather) {
-          this.vy += 0.05; // gravedad suave
-          this.vx *= 0.96;
-        }
-        this.life -= this.decay;
-      }
-
-      draw() {
-        const alpha = Math.max(0, this.life / this.maxLife);
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rotation);
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = this.color;
-
-        if (this.isFeather) {
-          ctx.beginPath();
-          ctx.ellipse(0, 0, this.size * 2, this.size * 0.8, 0, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-    }
-
-    const particles = [];
-    function spawnFeathers(x, y, count = 5) {
-      for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 2.5 + 0.5;
-        const vx = Math.cos(angle) * speed;
-        const vy = Math.sin(angle) * speed - 1.2;
-        const color = Math.random() > 0.4 ? '#facc15' : '#f59e0b';
-        particles.push(new Particle(x, y, vx, vy, color, Math.random() * 2.5 + 2, 1.0, 0.02, true));
-      }
-    }
-
-    function spawnDust(x, y, count = 8) {
-      for (let i = 0; i < count; i++) {
-        const vx = (Math.random() - 0.5) * 3;
-        const vy = -Math.random() * 2 - 0.5;
-        particles.push(new Particle(x, y, vx, vy, '#cbd5e1', Math.random() * 3 + 2, 0.8, 0.03, false));
-      }
-    }
-
-    // ==========================================
-    // AMBIENTE Y CICLO DÍA / ATARDECER / NOCHE
-    // ==========================================
-    const environment = {
-      timeOfDay: 0, // 0 = Día, 1 = Atardecer, 2 = Noche
-      clouds: [
-        { x: 30, y: 70, w: 90, h: 32, speed: 0.35, alpha: 0.85 },
-        { x: 210, y: 130, w: 120, h: 42, speed: 0.22, alpha: 0.7 },
-        { x: 340, y: 55, w: 80, h: 28, speed: 0.4, alpha: 0.8 }
-      ],
-      stars: Array.from({ length: 35 }, () => ({
-        x: Math.random() * 400,
-        y: Math.random() * 280,
-        r: Math.random() * 1.5 + 0.5,
-        twinkle: Math.random() * Math.PI * 2
-      })),
-
-      update() {
-        // Cambia de ciclo cada 10 puntos para dinamismo visual
-        this.timeOfDay = Math.floor(score / 8) % 3;
-
-        this.clouds.forEach(c => {
-          c.x -= c.speed;
-          if (c.x + c.w < 0) c.x = canvas.width + 40;
-        });
-
-        this.stars.forEach(s => {
-          s.twinkle += 0.05;
-        });
-      },
-
-      drawSky() {
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height - 85);
-
-        if (this.timeOfDay === 0) {
-          // Día despejado y luminoso
-          skyGrad.addColorStop(0, '#0284c7');
-          skyGrad.addColorStop(0.65, '#38bdf8');
-          skyGrad.addColorStop(1, '#bae6fd');
-        } else if (this.timeOfDay === 1) {
-          // Atardecer dorado / magenta realista
-          skyGrad.addColorStop(0, '#312e81');
-          skyGrad.addColorStop(0.4, '#c026d3');
-          skyGrad.addColorStop(0.7, '#f97316');
-          skyGrad.addColorStop(1, '#fde047');
-        } else {
-          // Noche con luna
-          skyGrad.addColorStop(0, '#030712');
-          skyGrad.addColorStop(0.5, '#0f172a');
-          skyGrad.addColorStop(1, '#1e293b');
-        }
-
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height - 85);
-
-        // Estrellas en modo noche
-        if (this.timeOfDay === 2) {
-          this.stars.forEach(s => {
-            const alpha = 0.5 + Math.sin(s.twinkle) * 0.45;
-            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fill();
-          });
-        }
-
-        // Sol o Luna
-        ctx.save();
-        if (this.timeOfDay === 0) {
-          // Sol brillante con resplandor
-          const sunGlow = ctx.createRadialGradient(320, 80, 5, 320, 80, 50);
-          sunGlow.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-          sunGlow.addColorStop(0.3, 'rgba(254, 240, 138, 0.5)');
-          sunGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
-          ctx.fillStyle = sunGlow;
-          ctx.beginPath();
-          ctx.arc(320, 80, 50, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (this.timeOfDay === 1) {
-          // Sol poniente
-          ctx.fillStyle = '#fb923c';
-          ctx.beginPath();
-          ctx.arc(310, 130, 28, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          // Luna con brillo
-          ctx.fillStyle = '#f8fafc';
-          ctx.shadowColor = '#e2e8f0';
-          ctx.shadowBlur = 18;
-          ctx.beginPath();
-          ctx.arc(320, 70, 20, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-          // Cráter
-          ctx.fillStyle = '#cbd5e1';
-          ctx.beginPath();
-          ctx.arc(315, 66, 4, 0, Math.PI * 2);
-          ctx.arc(326, 75, 5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-
-        // Nubes suaves
-        this.clouds.forEach(c => {
-          ctx.save();
-          ctx.fillStyle = this.timeOfDay === 2 ? `rgba(148, 163, 184, 0.25)` : `rgba(255, 255, 255, ${c.alpha})`;
-          ctx.beginPath();
-          ctx.arc(c.x + c.w * 0.3, c.y, c.h * 0.7, 0, Math.PI * 2);
-          ctx.arc(c.x + c.w * 0.6, c.y - c.h * 0.2, c.h * 0.9, 0, Math.PI * 2);
-          ctx.arc(c.x + c.w * 0.85, c.y, c.h * 0.6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        });
-
-        // Montañas lejanas con efecto de profundidad (Parallax)
-        const mountGrad = ctx.createLinearGradient(0, canvas.height - 240, 0, canvas.height - 85);
-        if (this.timeOfDay === 0) {
-          mountGrad.addColorStop(0, 'rgba(56, 189, 248, 0.2)');
-          mountGrad.addColorStop(1, '#0284c7');
-        } else if (this.timeOfDay === 1) {
-          mountGrad.addColorStop(0, 'rgba(126, 34, 206, 0.3)');
-          mountGrad.addColorStop(1, '#581c87');
-        } else {
-          mountGrad.addColorStop(0, '#090d16');
-          mountGrad.addColorStop(1, '#020617');
-        }
-
-        ctx.fillStyle = mountGrad;
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height - 85);
-        ctx.lineTo(0, canvas.height - 180);
-        ctx.lineTo(80, canvas.height - 230);
-        ctx.lineTo(170, canvas.height - 170);
-        ctx.lineTo(260, canvas.height - 245);
-        ctx.lineTo(350, canvas.height - 165);
-        ctx.lineTo(400, canvas.height - 210);
-        ctx.lineTo(400, canvas.height - 85);
-        ctx.closePath();
-        ctx.fill();
-      },
-
-      drawGround(offset) {
-        const gh = 85;
-        const gy = canvas.height - gh;
-
-        // Capa de tierra realista con textura y gradiente
-        const groundGrad = ctx.createLinearGradient(0, gy, 0, canvas.height);
-        groundGrad.addColorStop(0, '#854d0e');
-        groundGrad.addColorStop(0.3, '#713f12');
-        groundGrad.addColorStop(1, '#451a03');
-        ctx.fillStyle = groundGrad;
-        ctx.fillRect(0, gy, canvas.width, gh);
-
-        // Capa de césped superior
-        const grassGrad = ctx.createLinearGradient(0, gy, 0, gy + 14);
-        grassGrad.addColorStop(0, '#4ade80');
-        grassGrad.addColorStop(0.5, '#22c55e');
-        grassGrad.addColorStop(1, '#15803d');
-        ctx.fillStyle = grassGrad;
-        ctx.fillRect(0, gy, canvas.width, 14);
-
-        // Borde superior iluminado del césped
-        ctx.strokeStyle = '#86efac';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(0, gy);
-        ctx.lineTo(canvas.width, gy);
-        ctx.stroke();
-
-        // Briznas y piedritas con movimiento continuo
-        ctx.fillStyle = '#166534';
-        const shift = offset % 16;
-        for (let x = -16; x < canvas.width + 16; x += 16) {
-          ctx.beginPath();
-          ctx.moveTo(x - shift, gy + 14);
-          ctx.lineTo(x - shift + 4, gy + 8);
-          ctx.lineTo(x - shift + 8, gy + 14);
-          ctx.fill();
-        }
-
-        // Granos de tierra
-        ctx.fillStyle = 'rgba(254, 240, 138, 0.2)';
-        for (let x = -20; x < canvas.width + 20; x += 25) {
-          ctx.fillRect(x - (offset % 25), gy + 28, 4, 3);
-          ctx.fillRect(x - (offset % 25) + 12, gy + 52, 6, 4);
-        }
-      }
-    };
-
-    // ==========================================
-    // PÁJARO CON FÍSICAS Y ANATOMÍA REALISTA
-    // ==========================================
+    // Pájaro con skins
     const bird = {
       x: 85,
       y: 260,
@@ -557,30 +756,44 @@
       jumpImpulse: -7.5,
       rotation: 0,
       wingCycle: 0,
-      isFlapping: false,
+      invulnerableTimer: 0,
 
       reset() {
         this.x = 85;
         this.y = 260;
         this.vy = 0;
         this.rotation = 0;
-        this.wingCycle = 0;
-        this.isFlapping = false;
+        this.invulnerableTimer = 0;
+        // Si el jugador tiene escudos comprados, activamos uno para la partida
+        if (shieldsOwned > 0) {
+          hasShieldActive = true;
+          shieldsOwned--;
+          saveEconomy();
+        } else {
+          hasShieldActive = false;
+        }
       },
 
       flap() {
         this.vy = this.jumpImpulse;
-        this.isFlapping = true;
-        this.wingCycle = 0;
-        playWingWoosh();
-        spawnFeathers(this.x - 12, this.y + 4, 4);
+        playSound('flap');
+        // Partículas según la skin activa
+        if (activeSkin === 'phoenix') {
+          spawnFireEmbers(this.x - 14, this.y + 4, 8);
+        } else if (activeSkin === 'mecha') {
+          spawnPlasmaSparks(this.x - 14, this.y + 4, 6);
+        } else {
+          spawnFeathers(this.x - 12, this.y + 4, 4);
+        }
       },
 
       update() {
+        if (this.invulnerableTimer > 0) this.invulnerableTimer--;
+
         if (gameState === STATES.TITLE) {
           this.wingCycle += 0.08;
           this.y = 260 + Math.sin(this.wingCycle) * 8;
-          this.rotation = 0.08 * Math.sin(this.wingCycle);
+          this.rotation = 0;
           return;
         }
 
@@ -588,41 +801,19 @@
           this.vy += this.gravity;
           this.y += this.vy;
 
-          // Rotación suave según velocidad vertical (aerodinámica)
           const targetRot = Math.min(Math.PI * 0.45, Math.max(-Math.PI * 0.25, (this.vy / 10) * 0.8));
-          this.rotation += (targetRot - this.rotation) * 0.14;
+          this.rotation += (targetRot - this.rotation) * 0.15;
+          this.wingCycle += (this.vy < 0 ? 0.35 : 0.12);
 
-          // Ciclo de ala
-          if (this.vy < 0) {
-            this.wingCycle += 0.35;
-          } else {
-            this.wingCycle += 0.12;
-          }
-
-          // Choque con el suelo
           const groundY = canvas.height - 85 - this.radius;
           if (this.y >= groundY) {
             this.y = groundY;
-            killBird();
+            triggerDeath();
           }
 
-          // Límite de techo
           if (this.y - this.radius <= 0) {
             this.y = this.radius;
             this.vy = 0;
-          }
-        } else if (gameState === STATES.DYING) {
-          // Físicas de caída y rebote al morir
-          this.vy += this.gravity * 1.2;
-          this.y += this.vy;
-          this.rotation += 0.15;
-
-          const groundY = canvas.height - 85 - this.radius;
-          if (this.y >= groundY) {
-            this.y = groundY;
-            this.vy = 0;
-            gameState = STATES.GAMEOVER;
-            spawnDust(this.x, canvas.height - 85, 12);
           }
         }
       },
@@ -632,116 +823,188 @@
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
 
-        // Sombra de cuerpo suave
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath();
-        ctx.ellipse(2, 6, 17, 13, 0, 0, Math.PI * 2);
-        ctx.fill();
+        // Efecto de parpadeo si está invulnerable (post-revive)
+        if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 4) % 2 === 0) {
+          ctx.globalAlpha = 0.4;
+        }
 
-        // Plumas de cola
-        ctx.fillStyle = '#b45309';
-        ctx.beginPath();
-        ctx.moveTo(-12, 2);
-        ctx.lineTo(-24, -2);
-        ctx.lineTo(-26, 4);
-        ctx.lineTo(-12, 7);
-        ctx.closePath();
-        ctx.fill();
+        // DIBUJAR SEGÚN LA SKIN SELECCIONADA
+        if (activeSkin === 'mecha') {
+          // SKIN: CYBER-MECHA
+          // Propulsor de plasma
+          ctx.fillStyle = '#06b6d4';
+          ctx.beginPath();
+          ctx.ellipse(-14, 2, 7, 4, 0, 0, Math.PI * 2);
+          ctx.fill();
 
-        // Cuerpo principal (gradiente esférico 3D)
-        const bodyGrad = ctx.createRadialGradient(-3, -4, 3, 0, 0, 18);
-        bodyGrad.addColorStop(0, '#fef08a');
-        bodyGrad.addColorStop(0.4, '#facc15');
-        bodyGrad.addColorStop(0.85, '#eab308');
-        bodyGrad.addColorStop(1, '#ca8a04');
-        ctx.fillStyle = bodyGrad;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 17, 14, 0, 0, Math.PI * 2);
-        ctx.fill();
+          // Cuerpo de titanio
+          ctx.fillStyle = '#64748b';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 17, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 2;
+          ctx.stroke();
 
-        // Borde fino del cuerpo
-        ctx.strokeStyle = '#a16207';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
+          // Visor Neón Cyan
+          ctx.fillStyle = '#22d3ee';
+          ctx.shadowColor = '#22d3ee';
+          ctx.shadowBlur = 10;
+          ctx.fillRect(4, -6, 12, 6);
+          ctx.shadowBlur = 0;
 
-        // Pecho blanco / suave
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.beginPath();
-        ctx.ellipse(7, 4, 7, 7, 0, 0, Math.PI * 2);
-        ctx.fill();
+          // Pico metálico
+          ctx.fillStyle = '#94a3b8';
+          ctx.beginPath();
+          ctx.moveTo(12, -2); ctx.lineTo(24, 2); ctx.lineTo(12, 6);
+          ctx.closePath(); ctx.fill();
 
-        // Ala realista y articulada (con aleteo orgánico)
-        const wingFlap = Math.sin(this.wingCycle) * 8;
-        const wingGrad = ctx.createLinearGradient(-10, 0, 4, wingFlap);
-        wingGrad.addColorStop(0, '#fef08a');
-        wingGrad.addColorStop(1, '#d97706');
+        } else if (activeSkin === 'phoenix') {
+          // SKIN: FÉNIX DE FUEGO
+          // Llamas de cola
+          ctx.fillStyle = '#f97316';
+          ctx.beginPath();
+          ctx.moveTo(-10, 0); ctx.lineTo(-26, -6); ctx.lineTo(-24, 6); ctx.closePath();
+          ctx.fill();
 
-        ctx.fillStyle = wingGrad;
-        ctx.strokeStyle = '#b45309';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(-6, -2);
-        ctx.quadraticCurveTo(-14, -8 + wingFlap, -4, -10 + wingFlap * 1.2);
-        ctx.quadraticCurveTo(8, -6 + wingFlap, 2, 2);
-        ctx.quadraticCurveTo(-2, 4, -6, -2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+          // Cuerpo ígneo
+          const fireGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 18);
+          fireGrad.addColorStop(0, '#fef08a');
+          fireGrad.addColorStop(0.5, '#f97316');
+          fireGrad.addColorStop(1, '#dc2626');
+          ctx.fillStyle = fireGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 17, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
 
-        // Ojo realista con reflejo
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.ellipse(9, -5, 5.5, 6.5, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+          // Ojo llameante
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(10, -5, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#7f1d1d';
+          ctx.beginPath();
+          ctx.arc(11, -5, 2, 0, Math.PI * 2); ctx.fill();
 
-        // Pupila
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.arc(10.5, -5, 3, 0, Math.PI * 2);
-        ctx.fill();
+          // Pico dorado
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.moveTo(12, -3); ctx.lineTo(24, 1); ctx.lineTo(12, 6);
+          ctx.closePath(); ctx.fill();
 
-        // Reflejo blanco en el ojo (Glint)
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(11.5, -6.5, 1.2, 0, Math.PI * 2);
-        ctx.fill();
+        } else if (activeSkin === 'king') {
+          // SKIN: REY PÁJARO
+          // Cuerpo dorado
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 17, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ca8a04';
+          ctx.stroke();
 
-        // Pico con profundidad y labio
-        const beakGrad = ctx.createLinearGradient(12, 0, 24, 4);
-        beakGrad.addColorStop(0, '#fb923c');
-        beakGrad.addColorStop(1, '#ea580c');
-        ctx.fillStyle = beakGrad;
-        ctx.beginPath();
-        ctx.moveTo(12, -3);
-        ctx.lineTo(24, 1);
-        ctx.lineTo(12, 6);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#9a3412';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
+          // Corona Real
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.moveTo(-8, -14);
+          ctx.lineTo(-4, -8); ctx.lineTo(0, -16);
+          ctx.lineTo(4, -8); ctx.lineTo(8, -14);
+          ctx.lineTo(8, -8); ctx.lineTo(-8, -8);
+          ctx.closePath();
+          ctx.fill();
+          // Rubíes de la corona
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(-1, -12, 3, 3);
 
-        // Línea divisoria del pico
-        ctx.strokeStyle = '#7c2d12';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(13, 1.5);
-        ctx.lineTo(22, 1.5);
-        ctx.stroke();
+          // Ojo
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath(); ctx.arc(9, -5, 4.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath(); ctx.arc(10, -5, 2.5, 0, Math.PI * 2); ctx.fill();
+
+          // Pico
+          ctx.fillStyle = '#ea580c';
+          ctx.beginPath();
+          ctx.moveTo(12, -2); ctx.lineTo(23, 2); ctx.lineTo(12, 6);
+          ctx.closePath(); ctx.fill();
+
+        } else {
+          // SKIN: CLÁSICO
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 17, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ca8a04';
+          ctx.stroke();
+
+          // Ala
+          const wingFlap = Math.sin(this.wingCycle) * 6;
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.ellipse(-6, 2 + wingFlap, 8, 5, -0.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Ojo
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath(); ctx.arc(9, -5, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath(); ctx.arc(10.5, -5, 2.5, 0, Math.PI * 2); ctx.fill();
+
+          // Pico
+          ctx.fillStyle = '#ea580c';
+          ctx.beginPath();
+          ctx.moveTo(12, -2); ctx.lineTo(23, 2); ctx.lineTo(12, 6);
+          ctx.closePath(); ctx.fill();
+        }
+
+        // DIBUJAR ESCUDO DE FUERZA (Si está activo)
+        if (hasShieldActive) {
+          ctx.strokeStyle = '#38bdf8';
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(0, 0, 24, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
 
         ctx.restore();
       }
     };
 
-    // ==========================================
-    // TUBERÍAS INDUSTRIALES METÁLICAS
-    // ==========================================
+    // Partículas
+    const particles = [];
+    function spawnFeathers(x, y, count) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x, y, vx: (Math.random() - 0.5) * 3, vy: -Math.random() * 2,
+          size: 3, color: '#facc15', life: 1.0, decay: 0.03
+        });
+      }
+    }
+    function spawnFireEmbers(x, y, count) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x, y, vx: -Math.random() * 3 - 1, vy: (Math.random() - 0.5) * 3,
+          size: Math.random() * 4 + 2, color: '#f97316', life: 1.0, decay: 0.04
+        });
+      }
+    }
+    function spawnPlasmaSparks(x, y, count) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x, y, vx: -Math.random() * 4 - 1, vy: (Math.random() - 0.5) * 2,
+          size: 3, color: '#22d3ee', life: 1.0, decay: 0.05
+        });
+      }
+    }
+
+    // Tuberías y Gemas flotantes
     const pipes = {
       items: [],
-      gap: 130,
+      gap: 135,
       width: 58,
       speed: 2.3,
 
@@ -752,59 +1015,93 @@
       update() {
         if (gameState !== STATES.PLAYING) return;
 
-        // Generar tubería cada 105 frames
-        if (frames % 105 === 0) {
+        if (frames % 110 === 0) {
           const minH = 70;
           const maxH = canvas.height - 85 - this.gap - minH;
           const topH = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
-          this.items.push({ x: canvas.width, top: topH, passed: false });
+          
+          // 65% de probabilidad de que aparezca una gema recolectable en el espacio
+          const hasGem = Math.random() < 0.65;
+          const gemY = topH + this.gap / 2;
+
+          this.items.push({
+            x: canvas.width,
+            top: topH,
+            passed: false,
+            gem: hasGem ? { y: gemY, collected: false } : null
+          });
         }
 
         for (let i = 0; i < this.items.length; i++) {
           const p = this.items[i];
           p.x -= this.speed;
 
-          // Colisión precisa caja-círculo
           const bottomY = p.top + this.gap;
-          const birdBox = {
-            x: bird.x,
-            y: bird.y,
-            r: bird.radius - 2
-          };
 
-          // Colisión con tubo superior
-          if (
-            birdBox.x + birdBox.r > p.x &&
-            birdBox.x - birdBox.r < p.x + this.width &&
-            birdBox.y - birdBox.r < p.top
-          ) {
-            killBird();
-            return;
-          }
-
-          // Colisión con tubo inferior
-          if (
-            birdBox.x + birdBox.r > p.x &&
-            birdBox.x - birdBox.r < p.x + this.width &&
-            birdBox.y + birdBox.r > bottomY
-          ) {
-            killBird();
-            return;
-          }
-
-          // Sumar punto
-          if (!p.passed && p.x + this.width < bird.x) {
-            p.passed = true;
-            score++;
-            totalPasses++;
-            playScoreBell();
-            if (score > highScore) {
-              highScore = score;
-              localStorage.setItem('flappy_real_high', highScore);
+          // RECOLECCIÓN DE GEMA
+          if (p.gem && !p.gem.collected) {
+            const dist = Math.hypot(bird.x - (p.x + this.width / 2), bird.y - p.gem.y);
+            if (dist < bird.radius + 14) {
+              p.gem.collected = true;
+              gems++;
+              saveEconomy();
+              playSound('gem');
+              // Destellos de gema
+              for (let k = 0; k < 6; k++) {
+                particles.push({
+                  x: bird.x, y: bird.y,
+                  vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
+                  size: 3, color: '#f43f5e', life: 1.0, decay: 0.04
+                });
+              }
             }
           }
 
-          // Eliminar las que salen de pantalla
+          // COLISIÓN CON TUBERÍA
+          if (bird.invulnerableTimer <= 0) {
+            const birdLeft = bird.x - bird.radius + 3;
+            const birdRight = bird.x + bird.radius - 3;
+            const birdTop = bird.y - bird.radius + 3;
+            const birdBottom = bird.y + bird.radius - 3;
+
+            const pipeLeft = p.x;
+            const pipeRight = p.x + this.width;
+
+            if (birdRight > pipeLeft && birdLeft < pipeRight) {
+              if (birdTop < p.top || birdBottom > bottomY) {
+                if (hasShieldActive) {
+                  // El escudo salva la vida
+                  hasShieldActive = false;
+                  bird.invulnerableTimer = 60; // 1 segundo de gracia
+                  playSound('shield_break');
+                  // Rompimiento de escudo visual
+                  for (let s = 0; s < 12; s++) {
+                    particles.push({
+                      x: bird.x, y: bird.y,
+                      vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6,
+                      size: 4, color: '#38bdf8', life: 1.0, decay: 0.03
+                    });
+                  }
+                } else {
+                  triggerDeath();
+                  return;
+                }
+              }
+            }
+          }
+
+          // PUNTO
+          if (!p.passed && p.x + this.width < bird.x) {
+            p.passed = true;
+            score++;
+            playSound('score');
+            if (score > highScore) {
+              highScore = score;
+              localStorage.setItem('flappy_vip_high', highScore);
+            }
+          }
+
+          // Eliminar de memoria
           if (p.x + this.width < -10) {
             this.items.splice(i, 1);
             i--;
@@ -814,100 +1111,145 @@
 
       draw() {
         for (const p of this.items) {
-          this.drawPipeSection(p.x, 0, this.width, p.top, true);
+          // Tubo superior e inferior
+          this.drawPipe(p.x, 0, this.width, p.top, true);
           const bottomY = p.top + this.gap;
           const bottomH = canvas.height - 85 - bottomY;
-          this.drawPipeSection(p.x, bottomY, this.width, bottomH, false);
+          this.drawPipe(p.x, bottomY, this.width, bottomH, false);
+
+          // DIBUJAR GEMA FLOTANTE
+          if (p.gem && !p.gem.collected) {
+            ctx.save();
+            ctx.translate(p.x + this.width / 2, p.gem.y);
+            // Rotación y brillo
+            const bob = Math.sin(frames * 0.1) * 3;
+            ctx.translate(0, bob);
+            ctx.fillStyle = '#f43f5e';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -9); ctx.lineTo(8, -2); ctx.lineTo(0, 10); ctx.lineTo(-8, -2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+          }
         }
       },
 
-      drawPipeSection(x, y, w, h, isTop) {
+      drawPipe(x, y, w, h, isTop) {
         if (h <= 0) return;
+        const grad = ctx.createLinearGradient(x, 0, x + w, 0);
+        grad.addColorStop(0, '#15803d');
+        grad.addColorStop(0.3, '#22c55e');
+        grad.addColorStop(0.6, '#86efac');
+        grad.addColorStop(1, '#14532d');
 
-        // Sombra proyectada por la tubería
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
-        ctx.fillRect(x + w, y, 12, h);
-
-        // Cuerpo cilíndrico metálico (gradiente realista con brillo central)
-        const pipeGrad = ctx.createLinearGradient(x, 0, x + w, 0);
-        pipeGrad.addColorStop(0, '#15803d');
-        pipeGrad.addColorStop(0.2, '#22c55e');
-        pipeGrad.addColorStop(0.55, '#86efac');
-        pipeGrad.addColorStop(0.85, '#16a34a');
-        pipeGrad.addColorStop(1, '#14532d');
-
-        ctx.fillStyle = pipeGrad;
+        ctx.fillStyle = grad;
         ctx.fillRect(x, y, w, h);
         ctx.strokeStyle = '#052e16';
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
 
-        // Reborde / Brida de la tubería
-        const capH = 26;
-        const capW = w + 8;
-        const capX = x - 4;
+        const capH = 24;
         const capY = isTop ? y + h - capH : y;
-
-        const capGrad = ctx.createLinearGradient(capX, 0, capX + capW, 0);
-        capGrad.addColorStop(0, '#166534');
-        capGrad.addColorStop(0.25, '#22c55e');
-        capGrad.addColorStop(0.6, '#bbf7d0');
-        capGrad.addColorStop(0.9, '#15803d');
-        capGrad.addColorStop(1, '#052e16');
-
-        ctx.fillStyle = capGrad;
-        ctx.fillRect(capX, capY, capW, capH);
-        ctx.strokeRect(capX, capY, capW, capH);
-
-        // Remaches / Tornillos industriales en la brida
-        ctx.fillStyle = '#052e16';
-        for (let rx = capX + 6; rx < capX + capW - 4; rx += 14) {
-          ctx.beginPath();
-          ctx.arc(rx, capY + capH / 2, 2.2, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        ctx.fillRect(x - 3, capY, w + 6, capH);
+        ctx.strokeRect(x - 3, capY, w + 6, capH);
       }
     };
 
-    // ==========================================
-    // LOGICA DE JUEGO Y ACCIÓN
-    // ==========================================
-    let frames = 0;
-    let groundOffset = 0;
-
-    function killBird() {
+    function triggerDeath() {
       if (gameState !== STATES.PLAYING) return;
-      gameState = STATES.DYING;
-      bird.vy = -4.5; // pequeño impulso de rebote al impactar
-      camera.shake = 18; // Sacudida intensa de cámara (screen shake)
-      playCrashSound();
-      spawnFeathers(bird.x, bird.y, 14);
+      gameState = STATES.GAMEOVER;
+      playSound('crash');
     }
 
-    function handleInput() {
+    function reviveGame() {
+      if (revivesOwned > 0 || gems >= 10) {
+        if (revivesOwned > 0) {
+          revivesOwned--;
+        } else {
+          gems -= 10;
+        }
+        saveEconomy();
+        playSound('kaching');
+        // Reanimar al pájaro en el centro y darle invulnerabilidad
+        bird.y = 260;
+        bird.vy = -3;
+        bird.invulnerableTimer = 120; // 2 segundos invulnerable
+        hasShieldActive = true;
+        // Limpiar tuberías inmediatas que causaron la muerte
+        pipes.items = pipes.items.filter(p => p.x > bird.x + 80);
+        gameState = STATES.PLAYING;
+      } else {
+        alert('Necesitas 1 Ficha de Resurrección o 10 Gemas para revivir. ¡Visita la Tienda VIP!');
+        openShop('powerups');
+      }
+    }
+
+    // INTERACCIÓN Y CLICS
+    function handleGameClick(clientX, clientY) {
       initAudio();
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (clientX - rect.left) * scaleX;
+      const y = (clientY - rect.top) * scaleY;
 
       if (gameState === STATES.TITLE) {
         gameState = STATES.PLAYING;
+        bird.reset();
+        pipes.reset();
+        score = 0;
         bird.flap();
       } else if (gameState === STATES.PLAYING) {
         bird.flap();
       } else if (gameState === STATES.GAMEOVER) {
-        // Reiniciar
-        bird.reset();
-        pipes.reset();
-        score = 0;
-        frames = 0;
-        gameState = STATES.PLAYING;
-        bird.flap();
+        // Clic en botón REVIVIR
+        const rBtn = uiButtons.reviveRect;
+        if (x >= rBtn.x && x <= rBtn.x + rBtn.w && y >= rBtn.y && y <= rBtn.y + rBtn.h) {
+          reviveGame();
+          return;
+        }
+
+        // Clic en botón REINTENTAR
+        const retBtn = uiButtons.retryRect;
+        if (x >= retBtn.x && x <= retBtn.x + retBtn.w && y >= retBtn.y && y <= retBtn.y + retBtn.h) {
+          bird.reset();
+          pipes.reset();
+          score = 0;
+          gameState = STATES.PLAYING;
+          bird.flap();
+          return;
+        }
       }
     }
 
-    // Controles por teclado y táctiles
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handleGameClick(e.clientX, e.clientY);
+    });
+
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' || e.code === 'ArrowUp') {
         e.preventDefault();
-        handleInput();
+        initAudio();
+        if (gameState === STATES.TITLE) {
+          gameState = STATES.PLAYING;
+          bird.reset();
+          pipes.reset();
+          score = 0;
+          bird.flap();
+        } else if (gameState === STATES.PLAYING) {
+          bird.flap();
+        } else if (gameState === STATES.GAMEOVER) {
+          // Por defecto reiniciar
+          bird.reset();
+          pipes.reset();
+          score = 0;
+          gameState = STATES.PLAYING;
+          bird.flap();
+        }
       } else if (e.code === 'KeyR') {
         bird.reset();
         pipes.reset();
@@ -916,180 +1258,153 @@
       }
     });
 
-    canvas.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      handleInput();
-    });
-
-    // ==========================================
-    // RENDERIZADO DE INTERFAZ (UI & GLASSMORPHISM)
-    // ==========================================
+    // DIBUJAR UI / HUD Y MODAL DE GAME OVER
     function drawHUD() {
       if (gameState === STATES.PLAYING) {
-        // Puntuación grande y nítida estilo arcade
-        ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 4;
-
+        // Marcador central
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#0f172a';
         ctx.lineWidth = 5;
-        ctx.font = '900 44px -apple-system, system-ui, sans-serif';
+        ctx.font = '900 44px -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.strokeText(score, canvas.width / 2, 70);
         ctx.fillText(score, canvas.width / 2, 70);
-        ctx.restore();
-      } else if (gameState === STATES.TITLE) {
-        // Pantalla de inicio
-        ctx.save();
-        ctx.textAlign = 'center';
 
-        // Título estilizado
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-        ctx.shadowBlur = 10;
+        // Indicador de Escudo Activo
+        if (hasShieldActive) {
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 13px -apple-system, sans-serif';
+          ctx.fillText('🛡️ ESCUDO ACTIVO', canvas.width / 2, 95);
+        }
+      } else if (gameState === STATES.TITLE) {
+        ctx.textAlign = 'center';
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#0284c7';
         ctx.lineWidth = 5;
-        ctx.font = '900 36px -apple-system, system-ui, sans-serif';
-        ctx.strokeText('FLAPPY BIRD', canvas.width / 2, 160);
-        ctx.fillText('FLAPPY BIRD', canvas.width / 2, 160);
+        ctx.font = '900 36px -apple-system, sans-serif';
+        ctx.strokeText('FLAPPY BIRD VIP', canvas.width / 2, 160);
+        ctx.fillText('FLAPPY BIRD VIP', canvas.width / 2, 160);
 
-        ctx.font = '700 13px -apple-system, system-ui, sans-serif';
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText('EDICIÓN REALISTA', canvas.width / 2, 185);
+        ctx.font = '700 13px -apple-system, sans-serif';
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('TIENDA DE SKINS & PODERES', canvas.width / 2, 185);
 
-        // Mensaje de llamada a la acción flotante
         const promptY = 340 + Math.sin(frames * 0.08) * 4;
         ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#090d16';
+        ctx.strokeStyle = '#0f172a';
         ctx.lineWidth = 4;
-        ctx.font = 'bold 18px -apple-system, system-ui, sans-serif';
-        ctx.strokeText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, promptY);
-        ctx.fillText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, promptY);
-
-        // Caja de récord
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
-        ctx.beginPath();
-        ctx.roundRect(canvas.width / 2 - 80, 375, 160, 36, 18);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        ctx.fillStyle = '#fde047';
-        ctx.font = 'bold 14px -apple-system, system-ui, sans-serif';
-        ctx.fillText(`🏆 Récord: ${highScore}`, canvas.width / 2, 398);
-        ctx.restore();
+        ctx.font = 'bold 18px -apple-system, sans-serif';
+        ctx.strokeText('¡Haz clic para iniciar!', canvas.width / 2, promptY);
+        ctx.fillText('¡Haz clic para iniciar!', canvas.width / 2, promptY);
       } else if (gameState === STATES.GAMEOVER) {
-        // Modal de Game Over con Glassmorphism
+        // PANEL DE GAME OVER CON BOTÓN DE REVIVIR
         ctx.save();
-        ctx.textAlign = 'center';
-
-        // Panel translúcido
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
         ctx.beginPath();
-        ctx.roundRect(40, 140, canvas.width - 80, 260, 20);
+        ctx.roundRect(35, 120, 330, 390, 20);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Título Game Over
+        ctx.textAlign = 'center';
         ctx.fillStyle = '#ef4444';
-        ctx.font = '900 28px -apple-system, system-ui, sans-serif';
-        ctx.fillText('¡GAME OVER!', canvas.width / 2, 185);
+        ctx.font = '900 28px -apple-system, sans-serif';
+        ctx.fillText('¡HAS CAÍDO!', canvas.width / 2, 165);
 
-        // Estadísticas
         ctx.fillStyle = '#f8fafc';
-        ctx.font = '600 18px -apple-system, system-ui, sans-serif';
-        ctx.fillText(`Puntuación: ${score}`, canvas.width / 2, 230);
+        ctx.font = '600 18px -apple-system, sans-serif';
+        ctx.fillText(`Puntuación: ${score}`, canvas.width / 2, 210);
 
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText(`Mejor Récord: ${highScore}`, canvas.width / 2, 265);
+        ctx.fillText(`Récord: ${highScore}`, canvas.width / 2, 245);
 
-        // Medalla según puntuación
-        let medal = '🥉 Bronce';
-        if (score >= 20) medal = '💎 Diamante';
-        else if (score >= 10) medal = '🥇 Oro';
-        else if (score >= 5) medal = '🥈 Plata';
+        ctx.fillStyle = '#fda4af';
+        ctx.font = 'bold 14px -apple-system, sans-serif';
+        ctx.fillText(`Tus Gemas: 💎 ${gems}`, canvas.width / 2, 280);
 
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 15px -apple-system, system-ui, sans-serif';
-        ctx.fillText(`Rango: ${medal}`, canvas.width / 2, 305);
+        // BOTÓN REVIVIR (VIP CONTINUAR)
+        const rBtn = uiButtons.reviveRect;
+        const revCan = revivesOwned > 0 ? `❤️ Usar Ficha (${revivesOwned})` : '💎 Revivir por 10 Gemas';
+        const gradRevive = ctx.createLinearGradient(rBtn.x, rBtn.y, rBtn.x + rBtn.w, rBtn.y + rBtn.h);
+        gradRevive.addColorStop(0, '#f43f5e');
+        gradRevive.addColorStop(1, '#e11d48');
+        ctx.fillStyle = gradRevive;
+        ctx.beginPath();
+        ctx.roundRect(rBtn.x, rBtn.y, rBtn.w, rBtn.h, 12);
+        ctx.fill();
+        ctx.strokeStyle = '#fda4af';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
-        // Instrucción
-        const blink = Math.floor(frames / 30) % 2 === 0;
-        if (blink) {
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '600 13px -apple-system, system-ui, sans-serif';
-          ctx.fillText('Toca o pulsa ESPACIO para reiniciar', canvas.width / 2, 365);
-        }
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 15px -apple-system, sans-serif';
+        ctx.fillText(revCan, canvas.width / 2, rBtn.y + 30);
+
+        // BOTÓN REINTENTAR NORMAL
+        const retBtn = uiButtons.retryRect;
+        ctx.fillStyle = '#334155';
+        ctx.beginPath();
+        ctx.roundRect(retBtn.x, retBtn.y, retBtn.w, retBtn.h, 10);
+        ctx.fill();
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '600 14px -apple-system, sans-serif';
+        ctx.fillText('Nueva Partida (Reiniciar)', canvas.width / 2, retBtn.y + 26);
         ctx.restore();
       }
     }
 
-    // Efecto de viñeta cinematográfica en los bordes
-    function drawVignette() {
-      const vGrad = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, canvas.width * 0.45,
-        canvas.width / 2, canvas.height / 2, canvas.width * 0.8
-      );
-      vGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      vGrad.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
-      ctx.fillStyle = vGrad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    // BUCLE PRINCIPAL
+    function mainLoop() {
+      // Cielo
+      const sky = ctx.createLinearGradient(0, 0, 0, canvas.height - 85);
+      sky.addColorStop(0, '#0284c7');
+      sky.addColorStop(1, '#bae6fd');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, canvas.width, canvas.height - 85);
 
-    // ==========================================
-    // BUCLE PRINCIPAL (60 FPS)
-    // ==========================================
-    function gameLoop() {
-      ctx.save();
-
-      // Aplicar vibración de cámara en colisiones
-      camera.applyShake();
-
-      // Actualizar ambiente y fondo
-      environment.update();
-      environment.drawSky();
+      // Nubes
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.beginPath();
+      ctx.arc(80, 80, 30, 0, Math.PI * 2); ctx.arc(120, 75, 40, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(280, 110, 35, 0, Math.PI * 2); ctx.arc(320, 105, 45, 0, Math.PI * 2); ctx.fill();
 
       // Tuberías
       pipes.update();
       pipes.draw();
 
-      // Suelo animado
-      if (gameState === STATES.PLAYING || gameState === STATES.TITLE) {
-        groundOffset += 2.3;
-      }
-      environment.drawGround(groundOffset);
+      // Suelo
+      if (gameState === STATES.PLAYING || gameState === STATES.TITLE) groundOffset += 2.3;
+      const gy = canvas.height - 85;
+      ctx.fillStyle = '#713f12';
+      ctx.fillRect(0, gy, canvas.width, 85);
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(0, gy, canvas.width, 14);
 
-      // Partículas (plumas, polvo)
+      // Partículas
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-        if (particles[i].life <= 0) {
-          particles.splice(i, 1);
-          i--;
-        }
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1.0;
+        if (p.life <= 0) { particles.splice(i, 1); i--; }
       }
 
       // Pájaro
       bird.update();
       bird.draw();
 
-      // Viñeta y HUD
-      drawVignette();
+      // HUD
       drawHUD();
 
-      ctx.restore();
-
       frames++;
-      requestAnimationFrame(gameLoop);
+      requestAnimationFrame(mainLoop);
     }
 
-    // Iniciar bucle
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(mainLoop);
   </script>
 </body>
 </html>
