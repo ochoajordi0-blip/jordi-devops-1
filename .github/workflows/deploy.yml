@@ -57,7 +57,7 @@ jobs:
           # Si usas contraseña en vez de clave SSH, descomenta:
           # password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT || 22 }}
-          source: "index.html"
+          source: "index.html,bg_warrior.jpg"
           target: "/var/www/html"
 
       - name: Recargar servicio Nginx
