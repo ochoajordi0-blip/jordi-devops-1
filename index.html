@@ -2,557 +2,1094 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flappy Bird | DevOps Nginx Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Flappy Bird Pro | Edición Realista Nginx</title>
   <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --accent: #38bdf8;
+      --accent-gold: #fbbf24;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: #f8fafc;
+      background: radial-gradient(circle at 50% 20%, #1e293b 0%, #090d16 100%);
+      color: var(--text-light);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 0.75rem;
       overflow-x: hidden;
     }
 
-    .header-bar {
+    .top-banner {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 440px;
       margin-bottom: 0.75rem;
-      background: rgba(30, 41, 59, 0.85);
-      padding: 0.5rem 1.25rem;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 0.5rem 1rem;
       border-radius: 9999px;
-      border: 1px solid #334155;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.5);
     }
 
-    .badge-dot {
-      width: 10px;
-      height: 10px;
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
       background-color: #22c55e;
       border-radius: 50%;
       box-shadow: 0 0 10px #22c55e;
-      animation: pulse 1.5s infinite;
+      animation: pulse 1.8s infinite;
     }
 
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
+      50% { opacity: 0.4; transform: scale(0.85); }
     }
 
-    .header-text {
-      font-size: 0.9rem;
+    .audio-btn {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
       font-weight: 600;
-      letter-spacing: 0.5px;
-      color: #38bdf8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.2s ease;
     }
 
-    .game-wrapper {
+    .audio-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .canvas-container {
       position: relative;
-      background: #000;
-      border: 4px solid #38bdf8;
-      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.25);
-      touch-action: manipulation;
+      border: 3px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
+                  0 0 35px rgba(56, 189, 248, 0.2);
+      background: #000;
+      touch-action: none;
     }
 
     canvas {
       display: block;
-      background: #70c5ce;
+      width: 100%;
+      height: auto;
+      background: #38bdf8;
     }
 
-    .instructions {
-      margin-top: 0.75rem;
-      text-align: center;
-      color: #94a3b8;
-      font-size: 0.85rem;
+    .controls-hint {
       display: flex;
       gap: 1rem;
-      justify-content: center;
+      margin-top: 0.75rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-align: center;
     }
 
-    .key-badge {
-      background: #334155;
-      color: #f1f5f9;
-      padding: 0.2rem 0.5rem;
+    .kbd {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      padding: 0.15rem 0.5rem;
       border-radius: 6px;
-      border: 1px solid #475569;
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 0.78rem;
     }
 
     .footer {
-      margin-top: 0.75rem;
+      margin-top: 0.6rem;
       font-size: 0.75rem;
       color: #64748b;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <div class="header-bar">
-    <div class="badge-dot"></div>
-    <span class="header-text">Servidor Nginx &bull; DevOps Practice 1</span>
+  <div class="top-banner">
+    <div class="server-status">
+      <span class="status-dot"></span>
+      <span>Nginx Live &bull; Real Physics Edition</span>
+    </div>
+    <button class="audio-btn" id="audioToggle">
+      <span id="audioIcon">🔊</span> Sonido
+    </button>
   </div>
 
-  <div class="game-wrapper" id="gameContainer">
-    <canvas id="gameCanvas" width="360" height="560"></canvas>
+  <div class="canvas-container" id="canvasBox">
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
   </div>
 
-  <div class="instructions">
-    <span><span class="key-badge">Espacio</span> o <span class="key-badge">Clic / Tap</span> para volar</span>
-    <span><span class="key-badge">R</span> reiniciar</span>
+  <div class="controls-hint">
+    <span><span class="kbd">ESPACIO</span> o <span class="kbd">TAP / CLIC</span> para aletear</span>
+    <span><span class="kbd">R</span> reiniciar</span>
   </div>
 
   <div class="footer">
-    Desplegado en Ubuntu AWS &bull; Nginx Web Server
+    DevOps Practice &bull; Desplegado en Ubuntu Server AWS con Nginx
   </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const audioBtn = document.getElementById('audioToggle');
+    const audioIcon = document.getElementById('audioIcon');
 
-    // Audio sintetizado con Web Audio API (sin dependencias externas)
+    // ==========================================
+    // SISTEMA DE AUDIO REALISTA (Web Audio API)
+    // ==========================================
     let audioCtx = null;
+    let soundEnabled = true;
+
     function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-    }
-
-    function playSound(type) {
-      if (!audioCtx) return;
-      try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        const now = audioCtx.currentTime;
-        if (type === 'flap') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(420, now);
-          osc.frequency.exponentialRampToValueAtTime(700, now + 0.12);
-          gain.gain.setValueAtTime(0.2, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-          osc.start(now);
-          osc.stop(now + 0.12);
-        } else if (type === 'score') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(587.33, now); // D5
-          osc.frequency.setValueAtTime(880, now + 0.08); // A5
-          gain.gain.setValueAtTime(0.25, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-          osc.start(now);
-          osc.stop(now + 0.22);
-        } else if (type === 'hit') {
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(260, now);
-          osc.frequency.exponentialRampToValueAtTime(90, now + 0.25);
-          gain.gain.setValueAtTime(0.35, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now);
-          osc.stop(now + 0.25);
-        }
-      } catch (e) {
-        // Fallback silencioso si audio no está habilitado
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
       }
     }
 
-    // Estados de juego
-    const STATES = { START: 0, PLAYING: 1, GAMEOVER: 2 };
-    let currentState = STATES.START;
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      initAudio();
+      soundEnabled = !soundEnabled;
+      audioIcon.textContent = soundEnabled ? '🔊' : '🔇';
+      audioBtn.style.opacity = soundEnabled ? '1' : '0.6';
+    });
 
-    let frames = 0;
+    function playWingWoosh() {
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const bufferSize = audioCtx.sampleRate * 0.15;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.04));
+        }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(450, now);
+        filter.frequency.exponentialRampToValueAtTime(180, now + 0.14);
+        filter.Q.value = 3.5;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start(now);
+      } catch (err) {}
+    }
+
+    function playScoreBell() {
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        [880, 1320, 1760].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.03);
+          gain.gain.setValueAtTime(0.15 / (idx + 1), now + idx * 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.03 + 0.4);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.03);
+          osc.stop(now + idx * 0.03 + 0.45);
+        });
+      } catch (err) {}
+    }
+
+    function playCrashSound() {
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.35);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } catch (err) {}
+    }
+
+    // ==========================================
+    // ESTADO DEL JUEGO Y CÁMARA
+    // ==========================================
+    const STATES = { TITLE: 0, PLAYING: 1, DYING: 2, GAMEOVER: 3 };
+    let gameState = STATES.TITLE;
     let score = 0;
-    let highScore = localStorage.getItem('flappy_high_score') || 0;
+    let highScore = parseInt(localStorage.getItem('flappy_real_high') || '0', 10);
+    let totalPasses = 0;
 
-    // Configuración de dimensiones
-    const GROUND_HEIGHT = 80;
+    const camera = {
+      shake: 0,
+      applyShake() {
+        if (this.shake > 0) {
+          const rx = (Math.random() - 0.5) * this.shake;
+          const ry = (Math.random() - 0.5) * this.shake;
+          ctx.translate(rx, ry);
+          this.shake *= 0.88;
+          if (this.shake < 0.3) this.shake = 0;
+        }
+      }
+    };
 
-    // Pájaro
+    // ==========================================
+    // SISTEMA DE PARTÍCULAS
+    // ==========================================
+    class Particle {
+      constructor(x, y, vx, vy, color, size, life, decay, isFeather = false) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.size = size;
+        this.life = life;
+        this.maxLife = life;
+        this.decay = decay;
+        this.isFeather = isFeather;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.15;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.rotation += this.rotSpeed;
+        if (this.isFeather) {
+          this.vy += 0.05; // gravedad suave
+          this.vx *= 0.96;
+        }
+        this.life -= this.decay;
+      }
+
+      draw() {
+        const alpha = Math.max(0, this.life / this.maxLife);
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = this.color;
+
+        if (this.isFeather) {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, this.size * 2, this.size * 0.8, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    const particles = [];
+    function spawnFeathers(x, y, count = 5) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 2.5 + 0.5;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed - 1.2;
+        const color = Math.random() > 0.4 ? '#facc15' : '#f59e0b';
+        particles.push(new Particle(x, y, vx, vy, color, Math.random() * 2.5 + 2, 1.0, 0.02, true));
+      }
+    }
+
+    function spawnDust(x, y, count = 8) {
+      for (let i = 0; i < count; i++) {
+        const vx = (Math.random() - 0.5) * 3;
+        const vy = -Math.random() * 2 - 0.5;
+        particles.push(new Particle(x, y, vx, vy, '#cbd5e1', Math.random() * 3 + 2, 0.8, 0.03, false));
+      }
+    }
+
+    // ==========================================
+    // AMBIENTE Y CICLO DÍA / ATARDECER / NOCHE
+    // ==========================================
+    const environment = {
+      timeOfDay: 0, // 0 = Día, 1 = Atardecer, 2 = Noche
+      clouds: [
+        { x: 30, y: 70, w: 90, h: 32, speed: 0.35, alpha: 0.85 },
+        { x: 210, y: 130, w: 120, h: 42, speed: 0.22, alpha: 0.7 },
+        { x: 340, y: 55, w: 80, h: 28, speed: 0.4, alpha: 0.8 }
+      ],
+      stars: Array.from({ length: 35 }, () => ({
+        x: Math.random() * 400,
+        y: Math.random() * 280,
+        r: Math.random() * 1.5 + 0.5,
+        twinkle: Math.random() * Math.PI * 2
+      })),
+
+      update() {
+        // Cambia de ciclo cada 10 puntos para dinamismo visual
+        this.timeOfDay = Math.floor(score / 8) % 3;
+
+        this.clouds.forEach(c => {
+          c.x -= c.speed;
+          if (c.x + c.w < 0) c.x = canvas.width + 40;
+        });
+
+        this.stars.forEach(s => {
+          s.twinkle += 0.05;
+        });
+      },
+
+      drawSky() {
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height - 85);
+
+        if (this.timeOfDay === 0) {
+          // Día despejado y luminoso
+          skyGrad.addColorStop(0, '#0284c7');
+          skyGrad.addColorStop(0.65, '#38bdf8');
+          skyGrad.addColorStop(1, '#bae6fd');
+        } else if (this.timeOfDay === 1) {
+          // Atardecer dorado / magenta realista
+          skyGrad.addColorStop(0, '#312e81');
+          skyGrad.addColorStop(0.4, '#c026d3');
+          skyGrad.addColorStop(0.7, '#f97316');
+          skyGrad.addColorStop(1, '#fde047');
+        } else {
+          // Noche con luna
+          skyGrad.addColorStop(0, '#030712');
+          skyGrad.addColorStop(0.5, '#0f172a');
+          skyGrad.addColorStop(1, '#1e293b');
+        }
+
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height - 85);
+
+        // Estrellas en modo noche
+        if (this.timeOfDay === 2) {
+          this.stars.forEach(s => {
+            const alpha = 0.5 + Math.sin(s.twinkle) * 0.45;
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+
+        // Sol o Luna
+        ctx.save();
+        if (this.timeOfDay === 0) {
+          // Sol brillante con resplandor
+          const sunGlow = ctx.createRadialGradient(320, 80, 5, 320, 80, 50);
+          sunGlow.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+          sunGlow.addColorStop(0.3, 'rgba(254, 240, 138, 0.5)');
+          sunGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
+          ctx.fillStyle = sunGlow;
+          ctx.beginPath();
+          ctx.arc(320, 80, 50, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (this.timeOfDay === 1) {
+          // Sol poniente
+          ctx.fillStyle = '#fb923c';
+          ctx.beginPath();
+          ctx.arc(310, 130, 28, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Luna con brillo
+          ctx.fillStyle = '#f8fafc';
+          ctx.shadowColor = '#e2e8f0';
+          ctx.shadowBlur = 18;
+          ctx.beginPath();
+          ctx.arc(320, 70, 20, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          // Cráter
+          ctx.fillStyle = '#cbd5e1';
+          ctx.beginPath();
+          ctx.arc(315, 66, 4, 0, Math.PI * 2);
+          ctx.arc(326, 75, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // Nubes suaves
+        this.clouds.forEach(c => {
+          ctx.save();
+          ctx.fillStyle = this.timeOfDay === 2 ? `rgba(148, 163, 184, 0.25)` : `rgba(255, 255, 255, ${c.alpha})`;
+          ctx.beginPath();
+          ctx.arc(c.x + c.w * 0.3, c.y, c.h * 0.7, 0, Math.PI * 2);
+          ctx.arc(c.x + c.w * 0.6, c.y - c.h * 0.2, c.h * 0.9, 0, Math.PI * 2);
+          ctx.arc(c.x + c.w * 0.85, c.y, c.h * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Montañas lejanas con efecto de profundidad (Parallax)
+        const mountGrad = ctx.createLinearGradient(0, canvas.height - 240, 0, canvas.height - 85);
+        if (this.timeOfDay === 0) {
+          mountGrad.addColorStop(0, 'rgba(56, 189, 248, 0.2)');
+          mountGrad.addColorStop(1, '#0284c7');
+        } else if (this.timeOfDay === 1) {
+          mountGrad.addColorStop(0, 'rgba(126, 34, 206, 0.3)');
+          mountGrad.addColorStop(1, '#581c87');
+        } else {
+          mountGrad.addColorStop(0, '#090d16');
+          mountGrad.addColorStop(1, '#020617');
+        }
+
+        ctx.fillStyle = mountGrad;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height - 85);
+        ctx.lineTo(0, canvas.height - 180);
+        ctx.lineTo(80, canvas.height - 230);
+        ctx.lineTo(170, canvas.height - 170);
+        ctx.lineTo(260, canvas.height - 245);
+        ctx.lineTo(350, canvas.height - 165);
+        ctx.lineTo(400, canvas.height - 210);
+        ctx.lineTo(400, canvas.height - 85);
+        ctx.closePath();
+        ctx.fill();
+      },
+
+      drawGround(offset) {
+        const gh = 85;
+        const gy = canvas.height - gh;
+
+        // Capa de tierra realista con textura y gradiente
+        const groundGrad = ctx.createLinearGradient(0, gy, 0, canvas.height);
+        groundGrad.addColorStop(0, '#854d0e');
+        groundGrad.addColorStop(0.3, '#713f12');
+        groundGrad.addColorStop(1, '#451a03');
+        ctx.fillStyle = groundGrad;
+        ctx.fillRect(0, gy, canvas.width, gh);
+
+        // Capa de césped superior
+        const grassGrad = ctx.createLinearGradient(0, gy, 0, gy + 14);
+        grassGrad.addColorStop(0, '#4ade80');
+        grassGrad.addColorStop(0.5, '#22c55e');
+        grassGrad.addColorStop(1, '#15803d');
+        ctx.fillStyle = grassGrad;
+        ctx.fillRect(0, gy, canvas.width, 14);
+
+        // Borde superior iluminado del césped
+        ctx.strokeStyle = '#86efac';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, gy);
+        ctx.lineTo(canvas.width, gy);
+        ctx.stroke();
+
+        // Briznas y piedritas con movimiento continuo
+        ctx.fillStyle = '#166534';
+        const shift = offset % 16;
+        for (let x = -16; x < canvas.width + 16; x += 16) {
+          ctx.beginPath();
+          ctx.moveTo(x - shift, gy + 14);
+          ctx.lineTo(x - shift + 4, gy + 8);
+          ctx.lineTo(x - shift + 8, gy + 14);
+          ctx.fill();
+        }
+
+        // Granos de tierra
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.2)';
+        for (let x = -20; x < canvas.width + 20; x += 25) {
+          ctx.fillRect(x - (offset % 25), gy + 28, 4, 3);
+          ctx.fillRect(x - (offset % 25) + 12, gy + 52, 6, 4);
+        }
+      }
+    };
+
+    // ==========================================
+    // PÁJARO CON FÍSICAS Y ANATOMÍA REALISTA
+    // ==========================================
     const bird = {
-      x: 70,
-      y: 240,
-      radius: 14,
-      velocity: 0,
-      gravity: 0.32,
-      jump: -6.2,
+      x: 85,
+      y: 260,
+      radius: 15,
+      vy: 0,
+      gravity: 0.38,
+      jumpImpulse: -7.5,
       rotation: 0,
+      wingCycle: 0,
+      isFlapping: false,
+
+      reset() {
+        this.x = 85;
+        this.y = 260;
+        this.vy = 0;
+        this.rotation = 0;
+        this.wingCycle = 0;
+        this.isFlapping = false;
+      },
+
+      flap() {
+        this.vy = this.jumpImpulse;
+        this.isFlapping = true;
+        this.wingCycle = 0;
+        playWingWoosh();
+        spawnFeathers(this.x - 12, this.y + 4, 4);
+      },
+
+      update() {
+        if (gameState === STATES.TITLE) {
+          this.wingCycle += 0.08;
+          this.y = 260 + Math.sin(this.wingCycle) * 8;
+          this.rotation = 0.08 * Math.sin(this.wingCycle);
+          return;
+        }
+
+        if (gameState === STATES.PLAYING) {
+          this.vy += this.gravity;
+          this.y += this.vy;
+
+          // Rotación suave según velocidad vertical (aerodinámica)
+          const targetRot = Math.min(Math.PI * 0.45, Math.max(-Math.PI * 0.25, (this.vy / 10) * 0.8));
+          this.rotation += (targetRot - this.rotation) * 0.14;
+
+          // Ciclo de ala
+          if (this.vy < 0) {
+            this.wingCycle += 0.35;
+          } else {
+            this.wingCycle += 0.12;
+          }
+
+          // Choque con el suelo
+          const groundY = canvas.height - 85 - this.radius;
+          if (this.y >= groundY) {
+            this.y = groundY;
+            killBird();
+          }
+
+          // Límite de techo
+          if (this.y - this.radius <= 0) {
+            this.y = this.radius;
+            this.vy = 0;
+          }
+        } else if (gameState === STATES.DYING) {
+          // Físicas de caída y rebote al morir
+          this.vy += this.gravity * 1.2;
+          this.y += this.vy;
+          this.rotation += 0.15;
+
+          const groundY = canvas.height - 85 - this.radius;
+          if (this.y >= groundY) {
+            this.y = groundY;
+            this.vy = 0;
+            gameState = STATES.GAMEOVER;
+            spawnDust(this.x, canvas.height - 85, 12);
+          }
+        }
+      },
 
       draw() {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
 
-        // Cuerpo del pájaro
-        ctx.fillStyle = '#facc15';
+        // Sombra de cuerpo suave
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
         ctx.beginPath();
-        ctx.ellipse(0, 0, 16, 13, 0, 0, Math.PI * 2);
+        ctx.ellipse(2, 6, 17, 13, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#854d0e';
+
+        // Plumas de cola
+        ctx.fillStyle = '#b45309';
+        ctx.beginPath();
+        ctx.moveTo(-12, 2);
+        ctx.lineTo(-24, -2);
+        ctx.lineTo(-26, 4);
+        ctx.lineTo(-12, 7);
+        ctx.closePath();
+        ctx.fill();
+
+        // Cuerpo principal (gradiente esférico 3D)
+        const bodyGrad = ctx.createRadialGradient(-3, -4, 3, 0, 0, 18);
+        bodyGrad.addColorStop(0, '#fef08a');
+        bodyGrad.addColorStop(0.4, '#facc15');
+        bodyGrad.addColorStop(0.85, '#eab308');
+        bodyGrad.addColorStop(1, '#ca8a04');
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 17, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Borde fino del cuerpo
+        ctx.strokeStyle = '#a16207';
+        ctx.lineWidth = 1.2;
         ctx.stroke();
 
-        // Ojo
-        ctx.fillStyle = '#ffffff';
+        // Pecho blanco / suave
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
         ctx.beginPath();
-        ctx.arc(6, -5, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        ctx.arc(8, -5, 2.2, 0, Math.PI * 2);
+        ctx.ellipse(7, 4, 7, 7, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Pico
-        ctx.fillStyle = '#ea580c';
+        // Ala realista y articulada (con aleteo orgánico)
+        const wingFlap = Math.sin(this.wingCycle) * 8;
+        const wingGrad = ctx.createLinearGradient(-10, 0, 4, wingFlap);
+        wingGrad.addColorStop(0, '#fef08a');
+        wingGrad.addColorStop(1, '#d97706');
+
+        ctx.fillStyle = wingGrad;
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(11, -2);
-        ctx.lineTo(21, 2);
-        ctx.lineTo(11, 6);
+        ctx.moveTo(-6, -2);
+        ctx.quadraticCurveTo(-14, -8 + wingFlap, -4, -10 + wingFlap * 1.2);
+        ctx.quadraticCurveTo(8, -6 + wingFlap, 2, 2);
+        ctx.quadraticCurveTo(-2, 4, -6, -2);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        // Ala con animación de aleteo
-        const wingOffset = Math.sin(frames * 0.25) * 3;
-        ctx.fillStyle = '#fef08a';
+        // Ojo realista con reflejo
+        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.ellipse(-6, 2 + wingOffset, 8, 5, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(9, -5, 5.5, 6.5, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Pupila
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(10.5, -5, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Reflejo blanco en el ojo (Glint)
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(11.5, -6.5, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pico con profundidad y labio
+        const beakGrad = ctx.createLinearGradient(12, 0, 24, 4);
+        beakGrad.addColorStop(0, '#fb923c');
+        beakGrad.addColorStop(1, '#ea580c');
+        ctx.fillStyle = beakGrad;
+        ctx.beginPath();
+        ctx.moveTo(12, -3);
+        ctx.lineTo(24, 1);
+        ctx.lineTo(12, 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#9a3412';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // Línea divisoria del pico
+        ctx.strokeStyle = '#7c2d12';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(13, 1.5);
+        ctx.lineTo(22, 1.5);
         ctx.stroke();
 
         ctx.restore();
-      },
-
-      update() {
-        if (currentState === STATES.START) {
-          this.y = 240 + Math.sin(frames * 0.08) * 6;
-          this.rotation = 0;
-          return;
-        }
-
-        this.velocity += this.gravity;
-        this.y += this.velocity;
-
-        // Rotación según caída o salto
-        if (this.velocity < 0) {
-          this.rotation = -0.35;
-        } else {
-          this.rotation = Math.min(Math.PI / 2, this.rotation + 0.06);
-        }
-
-        // Colisión con el suelo
-        if (this.y + this.radius >= canvas.height - GROUND_HEIGHT) {
-          this.y = canvas.height - GROUND_HEIGHT - this.radius;
-          gameOver();
-        }
-
-        // Techo
-        if (this.y - this.radius <= 0) {
-          this.y = this.radius;
-          this.velocity = 0;
-        }
-      },
-
-      flap() {
-        this.velocity = this.jump;
-        playSound('flap');
-      },
-
-      reset() {
-        this.y = 240;
-        this.velocity = 0;
-        this.rotation = 0;
       }
     };
 
-    // Tuberías
+    // ==========================================
+    // TUBERÍAS INDUSTRIALES METÁLICAS
+    // ==========================================
     const pipes = {
       items: [],
-      gap: 135,
-      width: 54,
-      speed: 2.2,
+      gap: 130,
+      width: 58,
+      speed: 2.3,
 
-      draw() {
-        for (let p of this.items) {
-          ctx.fillStyle = '#22c55e';
-          ctx.strokeStyle = '#14532d';
-          ctx.lineWidth = 2.5;
-
-          // Tubo superior
-          ctx.fillRect(p.x, 0, this.width, p.top);
-          ctx.strokeRect(p.x, 0, this.width, p.top);
-
-          // Borde/tapa superior
-          ctx.fillStyle = '#16a34a';
-          ctx.fillRect(p.x - 3, p.top - 20, this.width + 6, 20);
-          ctx.strokeRect(p.x - 3, p.top - 20, this.width + 6, 20);
-
-          // Tubo inferior
-          const bottomY = p.top + this.gap;
-          const bottomH = canvas.height - GROUND_HEIGHT - bottomY;
-          ctx.fillStyle = '#22c55e';
-          ctx.fillRect(p.x, bottomY, this.width, bottomH);
-          ctx.strokeRect(p.x, bottomY, this.width, bottomH);
-
-          // Borde/tapa inferior
-          ctx.fillStyle = '#16a34a';
-          ctx.fillRect(p.x - 3, bottomY, this.width + 6, 20);
-          ctx.strokeRect(p.x - 3, bottomY, this.width + 6, 20);
-
-          // Brillo en tuberías
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-          ctx.fillRect(p.x + 6, 0, 6, p.top - 20);
-          ctx.fillRect(p.x + 6, bottomY + 20, 6, bottomH - 20);
-        }
+      reset() {
+        this.items = [];
       },
 
       update() {
-        if (currentState !== STATES.PLAYING) return;
+        if (gameState !== STATES.PLAYING) return;
 
-        // Generar cada 115 frames
-        if (frames % 115 === 0) {
-          const minH = 60;
-          const maxH = canvas.height - GROUND_HEIGHT - this.gap - minH;
-          const top = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
-          this.items.push({ x: canvas.width, top: top, scored: false });
+        // Generar tubería cada 105 frames
+        if (frames % 105 === 0) {
+          const minH = 70;
+          const maxH = canvas.height - 85 - this.gap - minH;
+          const topH = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+          this.items.push({ x: canvas.width, top: topH, passed: false });
         }
 
         for (let i = 0; i < this.items.length; i++) {
-          let p = this.items[i];
+          const p = this.items[i];
           p.x -= this.speed;
 
-          // Detección de colisión con pájaro
+          // Colisión precisa caja-círculo
           const bottomY = p.top + this.gap;
           const birdBox = {
-            left: bird.x - bird.radius + 3,
-            right: bird.x + bird.radius - 3,
-            top: bird.y - bird.radius + 3,
-            bottom: bird.y + bird.radius - 3
+            x: bird.x,
+            y: bird.y,
+            r: bird.radius - 2
           };
 
-          const pipeBox = {
-            left: p.x,
-            right: p.x + this.width
-          };
-
-          if (birdBox.right > pipeBox.left && birdBox.left < pipeBox.right) {
-            if (birdBox.top < p.top || birdBox.bottom > bottomY) {
-              gameOver();
-            }
+          // Colisión con tubo superior
+          if (
+            birdBox.x + birdBox.r > p.x &&
+            birdBox.x - birdBox.r < p.x + this.width &&
+            birdBox.y - birdBox.r < p.top
+          ) {
+            killBird();
+            return;
           }
 
-          // Aumento de puntuación
-          if (!p.scored && p.x + this.width < bird.x) {
+          // Colisión con tubo inferior
+          if (
+            birdBox.x + birdBox.r > p.x &&
+            birdBox.x - birdBox.r < p.x + this.width &&
+            birdBox.y + birdBox.r > bottomY
+          ) {
+            killBird();
+            return;
+          }
+
+          // Sumar punto
+          if (!p.passed && p.x + this.width < bird.x) {
+            p.passed = true;
             score++;
-            p.scored = true;
-            playSound('score');
+            totalPasses++;
+            playScoreBell();
             if (score > highScore) {
               highScore = score;
-              localStorage.setItem('flappy_high_score', highScore);
+              localStorage.setItem('flappy_real_high', highScore);
             }
           }
 
-          // Eliminar fuera de pantalla
-          if (p.x + this.width < 0) {
+          // Eliminar las que salen de pantalla
+          if (p.x + this.width < -10) {
             this.items.splice(i, 1);
             i--;
           }
         }
       },
 
-      reset() {
-        this.items = [];
-      }
-    };
-
-    // Fondo y Decoración
-    const background = {
-      clouds: [
-        { x: 40, y: 70, size: 30, speed: 0.4 },
-        { x: 180, y: 120, size: 25, speed: 0.3 },
-        { x: 300, y: 80, size: 35, speed: 0.5 }
-      ],
-
       draw() {
-        // Cielo
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height - GROUND_HEIGHT);
-        skyGrad.addColorStop(0, '#38bdf8');
-        skyGrad.addColorStop(1, '#bae6fd');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height - GROUND_HEIGHT);
+        for (const p of this.items) {
+          this.drawPipeSection(p.x, 0, this.width, p.top, true);
+          const bottomY = p.top + this.gap;
+          const bottomH = canvas.height - 85 - bottomY;
+          this.drawPipeSection(p.x, bottomY, this.width, bottomH, false);
+        }
+      },
 
-        // Nubes
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        for (let c of this.clouds) {
+      drawPipeSection(x, y, w, h, isTop) {
+        if (h <= 0) return;
+
+        // Sombra proyectada por la tubería
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+        ctx.fillRect(x + w, y, 12, h);
+
+        // Cuerpo cilíndrico metálico (gradiente realista con brillo central)
+        const pipeGrad = ctx.createLinearGradient(x, 0, x + w, 0);
+        pipeGrad.addColorStop(0, '#15803d');
+        pipeGrad.addColorStop(0.2, '#22c55e');
+        pipeGrad.addColorStop(0.55, '#86efac');
+        pipeGrad.addColorStop(0.85, '#16a34a');
+        pipeGrad.addColorStop(1, '#14532d');
+
+        ctx.fillStyle = pipeGrad;
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = '#052e16';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+
+        // Reborde / Brida de la tubería
+        const capH = 26;
+        const capW = w + 8;
+        const capX = x - 4;
+        const capY = isTop ? y + h - capH : y;
+
+        const capGrad = ctx.createLinearGradient(capX, 0, capX + capW, 0);
+        capGrad.addColorStop(0, '#166534');
+        capGrad.addColorStop(0.25, '#22c55e');
+        capGrad.addColorStop(0.6, '#bbf7d0');
+        capGrad.addColorStop(0.9, '#15803d');
+        capGrad.addColorStop(1, '#052e16');
+
+        ctx.fillStyle = capGrad;
+        ctx.fillRect(capX, capY, capW, capH);
+        ctx.strokeRect(capX, capY, capW, capH);
+
+        // Remaches / Tornillos industriales en la brida
+        ctx.fillStyle = '#052e16';
+        for (let rx = capX + 6; rx < capX + capW - 4; rx += 14) {
           ctx.beginPath();
-          ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
-          ctx.arc(c.x + c.size * 0.7, c.y - 6, c.size * 0.75, 0, Math.PI * 2);
-          ctx.arc(c.x - c.size * 0.7, c.y + 2, c.size * 0.65, 0, Math.PI * 2);
+          ctx.arc(rx, capY + capH / 2, 2.2, 0, Math.PI * 2);
           ctx.fill();
-
-          if (currentState !== STATES.GAMEOVER) {
-            c.x -= c.speed;
-            if (c.x + c.size * 2 < 0) c.x = canvas.width + c.size * 2;
-          }
-        }
-
-        // Silueta de edificios en el fondo
-        ctx.fillStyle = '#7dd3fc';
-        for (let i = 0; i < 7; i++) {
-          const bx = i * 60 - ((frames * 0.3) % 60);
-          ctx.fillRect(bx, canvas.height - GROUND_HEIGHT - 65, 45, 65);
-        }
-
-        // Suelo
-        ctx.fillStyle = '#ded895';
-        ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
-
-        // Césped del suelo
-        ctx.fillStyle = '#4ade80';
-        ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, 14);
-        ctx.strokeStyle = '#15803d';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(0, canvas.height - GROUND_HEIGHT, canvas.width, 14);
-
-        // Patrón en el suelo
-        ctx.strokeStyle = '#ca8a04';
-        ctx.lineWidth = 2;
-        const groundShift = (frames * 2.2) % 20;
-        for (let x = -20; x < canvas.width + 20; x += 20) {
-          ctx.beginPath();
-          ctx.moveTo(x - groundShift, canvas.height - GROUND_HEIGHT + 14);
-          ctx.lineTo(x - groundShift + 10, canvas.height);
-          ctx.stroke();
         }
       }
     };
 
-    function gameOver() {
-      if (currentState === STATES.GAMEOVER) return;
-      currentState = STATES.GAMEOVER;
-      playSound('hit');
+    // ==========================================
+    // LOGICA DE JUEGO Y ACCIÓN
+    // ==========================================
+    let frames = 0;
+    let groundOffset = 0;
+
+    function killBird() {
+      if (gameState !== STATES.PLAYING) return;
+      gameState = STATES.DYING;
+      bird.vy = -4.5; // pequeño impulso de rebote al impactar
+      camera.shake = 18; // Sacudida intensa de cámara (screen shake)
+      playCrashSound();
+      spawnFeathers(bird.x, bird.y, 14);
     }
 
-    function resetGame() {
-      bird.reset();
-      pipes.reset();
-      score = 0;
-      frames = 0;
-      currentState = STATES.START;
-    }
-
-    function handleAction() {
+    function handleInput() {
       initAudio();
-      if (currentState === STATES.START) {
-        currentState = STATES.PLAYING;
+
+      if (gameState === STATES.TITLE) {
+        gameState = STATES.PLAYING;
         bird.flap();
-      } else if (currentState === STATES.PLAYING) {
+      } else if (gameState === STATES.PLAYING) {
         bird.flap();
-      } else if (currentState === STATES.GAMEOVER) {
-        resetGame();
+      } else if (gameState === STATES.GAMEOVER) {
+        // Reiniciar
+        bird.reset();
+        pipes.reset();
+        score = 0;
+        frames = 0;
+        gameState = STATES.PLAYING;
+        bird.flap();
       }
     }
 
-    // Eventos de controles
+    // Controles por teclado y táctiles
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
         e.preventDefault();
-        handleAction();
+        handleInput();
       } else if (e.code === 'KeyR') {
-        resetGame();
+        bird.reset();
+        pipes.reset();
+        score = 0;
+        gameState = STATES.TITLE;
       }
     });
 
     canvas.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      handleAction();
+      handleInput();
     });
 
-    // Bucle principal del juego
-    function loop() {
-      background.draw();
-      pipes.update();
-      pipes.draw();
-      bird.update();
-      bird.draw();
+    // ==========================================
+    // RENDERIZADO DE INTERFAZ (UI & GLASSMORPHISM)
+    // ==========================================
+    function drawHUD() {
+      if (gameState === STATES.PLAYING) {
+        // Puntuación grande y nítida estilo arcade
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 4;
 
-      // UI y marcadores
-      if (currentState === STATES.PLAYING) {
         ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 4;
-        ctx.font = 'bold 38px Impact, sans-serif';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 5;
+        ctx.font = '900 44px -apple-system, system-ui, sans-serif';
         ctx.textAlign = 'center';
-        ctx.strokeText(score, canvas.width / 2, 60);
-        ctx.fillText(score, canvas.width / 2, 60);
-      } else if (currentState === STATES.START) {
+        ctx.strokeText(score, canvas.width / 2, 70);
+        ctx.fillText(score, canvas.width / 2, 70);
+        ctx.restore();
+      } else if (gameState === STATES.TITLE) {
+        // Pantalla de inicio
+        ctx.save();
+        ctx.textAlign = 'center';
+
+        // Título estilizado
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 10;
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 4;
-        ctx.font = 'bold 32px Impact, sans-serif';
-        ctx.textAlign = 'center';
+        ctx.lineWidth = 5;
+        ctx.font = '900 36px -apple-system, system-ui, sans-serif';
         ctx.strokeText('FLAPPY BIRD', canvas.width / 2, 160);
         ctx.fillText('FLAPPY BIRD', canvas.width / 2, 160);
 
-        ctx.fillStyle = '#f8fafc';
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 3;
-        ctx.font = 'bold 18px "Segoe UI", sans-serif';
-        ctx.strokeText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, 330);
-        ctx.fillText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, 330);
+        ctx.font = '700 13px -apple-system, system-ui, sans-serif';
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText('EDICIÓN REALISTA', canvas.width / 2, 185);
 
-        ctx.font = '14px "Segoe UI", sans-serif';
-        ctx.fillStyle = '#334155';
-        ctx.fillText(`Récord actual: ${highScore}`, canvas.width / 2, 360);
-      } else if (currentState === STATES.GAMEOVER) {
-        // Modal de Game Over
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        // Mensaje de llamada a la acción flotante
+        const promptY = 340 + Math.sin(frames * 0.08) * 4;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 4;
+        ctx.font = 'bold 18px -apple-system, system-ui, sans-serif';
+        ctx.strokeText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, promptY);
+        ctx.fillText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, promptY);
+
+        // Caja de récord
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
         ctx.beginPath();
-        ctx.roundRect(40, 150, canvas.width - 80, 220, 16);
+        ctx.roundRect(canvas.width / 2 - 80, 375, 160, 36, 18);
         ctx.fill();
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        ctx.fillStyle = '#ef4444';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
-        ctx.font = 'bold 28px Impact, sans-serif';
+        ctx.fillStyle = '#fde047';
+        ctx.font = 'bold 14px -apple-system, system-ui, sans-serif';
+        ctx.fillText(`🏆 Récord: ${highScore}`, canvas.width / 2, 398);
+        ctx.restore();
+      } else if (gameState === STATES.GAMEOVER) {
+        // Modal de Game Over con Glassmorphism
+        ctx.save();
         ctx.textAlign = 'center';
-        ctx.strokeText('¡GAME OVER!', canvas.width / 2, 195);
-        ctx.fillText('¡GAME OVER!', canvas.width / 2, 195);
 
+        // Panel translúcido
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.beginPath();
+        ctx.roundRect(40, 140, canvas.width - 80, 260, 20);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Título Game Over
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '900 28px -apple-system, system-ui, sans-serif';
+        ctx.fillText('¡GAME OVER!', canvas.width / 2, 185);
+
+        // Estadísticas
         ctx.fillStyle = '#f8fafc';
-        ctx.font = 'bold 18px "Segoe UI", sans-serif';
-        ctx.fillText(`Puntuación: ${score}`, canvas.width / 2, 245);
+        ctx.font = '600 18px -apple-system, system-ui, sans-serif';
+        ctx.fillText(`Puntuación: ${score}`, canvas.width / 2, 230);
 
-        ctx.fillStyle = '#facc15';
-        ctx.fillText(`Mejor Récord: ${highScore}`, canvas.width / 2, 275);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText(`Mejor Récord: ${highScore}`, canvas.width / 2, 265);
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '13px "Segoe UI", sans-serif';
-        ctx.fillText('Pulsa ESPACIO o Clic para reintentar', canvas.width / 2, 325);
+        // Medalla según puntuación
+        let medal = '🥉 Bronce';
+        if (score >= 20) medal = '💎 Diamante';
+        else if (score >= 10) medal = '🥇 Oro';
+        else if (score >= 5) medal = '🥈 Plata';
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 15px -apple-system, system-ui, sans-serif';
+        ctx.fillText(`Rango: ${medal}`, canvas.width / 2, 305);
+
+        // Instrucción
+        const blink = Math.floor(frames / 30) % 2 === 0;
+        if (blink) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '600 13px -apple-system, system-ui, sans-serif';
+          ctx.fillText('Toca o pulsa ESPACIO para reiniciar', canvas.width / 2, 365);
+        }
+        ctx.restore();
       }
-
-      frames++;
-      requestAnimationFrame(loop);
     }
 
-    loop();
+    // Efecto de viñeta cinematográfica en los bordes
+    function drawVignette() {
+      const vGrad = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.45,
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.8
+      );
+      vGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      vGrad.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
+      ctx.fillStyle = vGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // ==========================================
+    // BUCLE PRINCIPAL (60 FPS)
+    // ==========================================
+    function gameLoop() {
+      ctx.save();
+
+      // Aplicar vibración de cámara en colisiones
+      camera.applyShake();
+
+      // Actualizar ambiente y fondo
+      environment.update();
+      environment.drawSky();
+
+      // Tuberías
+      pipes.update();
+      pipes.draw();
+
+      // Suelo animado
+      if (gameState === STATES.PLAYING || gameState === STATES.TITLE) {
+        groundOffset += 2.3;
+      }
+      environment.drawGround(groundOffset);
+
+      // Partículas (plumas, polvo)
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].life <= 0) {
+          particles.splice(i, 1);
+          i--;
+        }
+      }
+
+      // Pájaro
+      bird.update();
+      bird.draw();
+
+      // Viñeta y HUD
+      drawVignette();
+      drawHUD();
+
+      ctx.restore();
+
+      frames++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Iniciar bucle
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
