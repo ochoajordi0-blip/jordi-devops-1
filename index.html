@@ -3,176 +3,556 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DevOps Practice 1 | CI/CD con Nginx</title>
+  <title>Flappy Bird | DevOps Nginx Edition</title>
   <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-green: #22c55e;
-      --border-color: #334155;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f8fafc;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2rem 1rem;
+      padding: 1rem;
+      overflow-x: hidden;
     }
 
-    .container {
-      max-width: 720px;
-      width: 100%;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 2.5rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-    }
-
-    .badge {
-      display: inline-flex;
+    .header-bar {
+      display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
-      background-color: rgba(34, 197, 94, 0.15);
-      color: var(--accent-green);
-      font-size: 0.875rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-    }
-
-    .pulse {
-      width: 8px;
-      height: 8px;
-      background-color: var(--accent-green);
-      border-radius: 50%;
-      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-      animation: pulse-ring 1.5s infinite;
-    }
-
-    @keyframes pulse-ring {
-      0% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-      }
-      70% {
-        box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-      }
-    }
-
-    h1 {
-      font-size: 2.25rem;
-      font-weight: 700;
+      gap: 0.75rem;
       margin-bottom: 0.75rem;
-      color: var(--text-main);
+      background: rgba(30, 41, 59, 0.85);
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      border: 1px solid #334155;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     }
 
-    .subtitle {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      line-height: 1.6;
+    .badge-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #22c55e;
+      animation: pulse 1.5s infinite;
     }
 
-    .pipeline-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
     }
 
-    .pipeline-card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.25rem;
-    }
-
-    .pipeline-card h3 {
-      font-size: 0.95rem;
-      color: var(--accent);
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .pipeline-card p {
+    .header-text {
       font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.4;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #38bdf8;
     }
 
-    .info-box {
-      border-left: 4px solid var(--accent);
-      background-color: rgba(56, 189, 248, 0.08);
-      padding: 1rem 1.25rem;
-      border-radius: 0 8px 8px 0;
-      font-size: 0.95rem;
-      color: var(--text-main);
-      margin-bottom: 2rem;
+    .game-wrapper {
+      position: relative;
+      background: #000;
+      border: 4px solid #38bdf8;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.25);
+      touch-action: manipulation;
     }
 
-    footer {
+    canvas {
+      display: block;
+      background: #70c5ce;
+    }
+
+    .instructions {
+      margin-top: 0.75rem;
       text-align: center;
-      color: var(--text-muted);
+      color: #94a3b8;
       font-size: 0.85rem;
-      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .key-badge {
+      background: #334155;
+      color: #f1f5f9;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #64748b;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="badge">
-      <span class="pulse"></span>
-      Despliegue Exitoso
-    </div>
 
-    <h1>DevOps Practice 1</h1>
-    <p class="subtitle">
-      Página estática servida por <strong>Nginx</strong> y desplegada automáticamente mediante un pipeline de <strong>GitHub Actions (CI/CD)</strong>.
-    </p>
-
-    <div class="pipeline-grid">
-      <div class="pipeline-card">
-        <h3>1. Repositorio</h3>
-        <p>Control de versiones en GitHub con disparador automático en rama <code>main</code>.</p>
-      </div>
-
-      <div class="pipeline-card">
-        <h3>2. CI / CD</h3>
-        <p>GitHub Actions valida la sintaxis y transfiere los archivos mediante SSH/SCP.</p>
-      </div>
-
-      <div class="pipeline-card">
-        <h3>3. Servidor Web</h3>
-        <p>Nginx publica el contenido desde <code>/var/www/html/</code> hacia la web.</p>
-      </div>
-    </div>
-
-    <div class="info-box">
-      <strong>Estado:</strong> Servidor Nginx operativo. Cada nuevo commit en <code>main</code> actualizará esta página en tiempo real.
-    </div>
-
-    <footer>
-      Laboratorio de DevOps &bull; GitHub Actions &bull; Nginx Server
-    </footer>
+  <div class="header-bar">
+    <div class="badge-dot"></div>
+    <span class="header-text">Servidor Nginx &bull; DevOps Practice 1</span>
   </div>
+
+  <div class="game-wrapper" id="gameContainer">
+    <canvas id="gameCanvas" width="360" height="560"></canvas>
+  </div>
+
+  <div class="instructions">
+    <span><span class="key-badge">Espacio</span> o <span class="key-badge">Clic / Tap</span> para volar</span>
+    <span><span class="key-badge">R</span> reiniciar</span>
+  </div>
+
+  <div class="footer">
+    Desplegado en Ubuntu AWS &bull; Nginx Web Server
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Audio sintetizado con Web Audio API (sin dependencias externas)
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSound(type) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'flap') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(420, now);
+          osc.frequency.exponentialRampToValueAtTime(700, now + 0.12);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        } else if (type === 'score') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.setValueAtTime(880, now + 0.08); // A5
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        } else if (type === 'hit') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(260, now);
+          osc.frequency.exponentialRampToValueAtTime(90, now + 0.25);
+          gain.gain.setValueAtTime(0.35, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {
+        // Fallback silencioso si audio no está habilitado
+      }
+    }
+
+    // Estados de juego
+    const STATES = { START: 0, PLAYING: 1, GAMEOVER: 2 };
+    let currentState = STATES.START;
+
+    let frames = 0;
+    let score = 0;
+    let highScore = localStorage.getItem('flappy_high_score') || 0;
+
+    // Configuración de dimensiones
+    const GROUND_HEIGHT = 80;
+
+    // Pájaro
+    const bird = {
+      x: 70,
+      y: 240,
+      radius: 14,
+      velocity: 0,
+      gravity: 0.32,
+      jump: -6.2,
+      rotation: 0,
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+
+        // Cuerpo del pájaro
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 16, 13, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#854d0e';
+        ctx.stroke();
+
+        // Ojo
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(6, -5, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(8, -5, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pico
+        ctx.fillStyle = '#ea580c';
+        ctx.beginPath();
+        ctx.moveTo(11, -2);
+        ctx.lineTo(21, 2);
+        ctx.lineTo(11, 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Ala con animación de aleteo
+        const wingOffset = Math.sin(frames * 0.25) * 3;
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.ellipse(-6, 2 + wingOffset, 8, 5, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.restore();
+      },
+
+      update() {
+        if (currentState === STATES.START) {
+          this.y = 240 + Math.sin(frames * 0.08) * 6;
+          this.rotation = 0;
+          return;
+        }
+
+        this.velocity += this.gravity;
+        this.y += this.velocity;
+
+        // Rotación según caída o salto
+        if (this.velocity < 0) {
+          this.rotation = -0.35;
+        } else {
+          this.rotation = Math.min(Math.PI / 2, this.rotation + 0.06);
+        }
+
+        // Colisión con el suelo
+        if (this.y + this.radius >= canvas.height - GROUND_HEIGHT) {
+          this.y = canvas.height - GROUND_HEIGHT - this.radius;
+          gameOver();
+        }
+
+        // Techo
+        if (this.y - this.radius <= 0) {
+          this.y = this.radius;
+          this.velocity = 0;
+        }
+      },
+
+      flap() {
+        this.velocity = this.jump;
+        playSound('flap');
+      },
+
+      reset() {
+        this.y = 240;
+        this.velocity = 0;
+        this.rotation = 0;
+      }
+    };
+
+    // Tuberías
+    const pipes = {
+      items: [],
+      gap: 135,
+      width: 54,
+      speed: 2.2,
+
+      draw() {
+        for (let p of this.items) {
+          ctx.fillStyle = '#22c55e';
+          ctx.strokeStyle = '#14532d';
+          ctx.lineWidth = 2.5;
+
+          // Tubo superior
+          ctx.fillRect(p.x, 0, this.width, p.top);
+          ctx.strokeRect(p.x, 0, this.width, p.top);
+
+          // Borde/tapa superior
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(p.x - 3, p.top - 20, this.width + 6, 20);
+          ctx.strokeRect(p.x - 3, p.top - 20, this.width + 6, 20);
+
+          // Tubo inferior
+          const bottomY = p.top + this.gap;
+          const bottomH = canvas.height - GROUND_HEIGHT - bottomY;
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(p.x, bottomY, this.width, bottomH);
+          ctx.strokeRect(p.x, bottomY, this.width, bottomH);
+
+          // Borde/tapa inferior
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(p.x - 3, bottomY, this.width + 6, 20);
+          ctx.strokeRect(p.x - 3, bottomY, this.width + 6, 20);
+
+          // Brillo en tuberías
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.fillRect(p.x + 6, 0, 6, p.top - 20);
+          ctx.fillRect(p.x + 6, bottomY + 20, 6, bottomH - 20);
+        }
+      },
+
+      update() {
+        if (currentState !== STATES.PLAYING) return;
+
+        // Generar cada 115 frames
+        if (frames % 115 === 0) {
+          const minH = 60;
+          const maxH = canvas.height - GROUND_HEIGHT - this.gap - minH;
+          const top = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+          this.items.push({ x: canvas.width, top: top, scored: false });
+        }
+
+        for (let i = 0; i < this.items.length; i++) {
+          let p = this.items[i];
+          p.x -= this.speed;
+
+          // Detección de colisión con pájaro
+          const bottomY = p.top + this.gap;
+          const birdBox = {
+            left: bird.x - bird.radius + 3,
+            right: bird.x + bird.radius - 3,
+            top: bird.y - bird.radius + 3,
+            bottom: bird.y + bird.radius - 3
+          };
+
+          const pipeBox = {
+            left: p.x,
+            right: p.x + this.width
+          };
+
+          if (birdBox.right > pipeBox.left && birdBox.left < pipeBox.right) {
+            if (birdBox.top < p.top || birdBox.bottom > bottomY) {
+              gameOver();
+            }
+          }
+
+          // Aumento de puntuación
+          if (!p.scored && p.x + this.width < bird.x) {
+            score++;
+            p.scored = true;
+            playSound('score');
+            if (score > highScore) {
+              highScore = score;
+              localStorage.setItem('flappy_high_score', highScore);
+            }
+          }
+
+          // Eliminar fuera de pantalla
+          if (p.x + this.width < 0) {
+            this.items.splice(i, 1);
+            i--;
+          }
+        }
+      },
+
+      reset() {
+        this.items = [];
+      }
+    };
+
+    // Fondo y Decoración
+    const background = {
+      clouds: [
+        { x: 40, y: 70, size: 30, speed: 0.4 },
+        { x: 180, y: 120, size: 25, speed: 0.3 },
+        { x: 300, y: 80, size: 35, speed: 0.5 }
+      ],
+
+      draw() {
+        // Cielo
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height - GROUND_HEIGHT);
+        skyGrad.addColorStop(0, '#38bdf8');
+        skyGrad.addColorStop(1, '#bae6fd');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height - GROUND_HEIGHT);
+
+        // Nubes
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        for (let c of this.clouds) {
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+          ctx.arc(c.x + c.size * 0.7, c.y - 6, c.size * 0.75, 0, Math.PI * 2);
+          ctx.arc(c.x - c.size * 0.7, c.y + 2, c.size * 0.65, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (currentState !== STATES.GAMEOVER) {
+            c.x -= c.speed;
+            if (c.x + c.size * 2 < 0) c.x = canvas.width + c.size * 2;
+          }
+        }
+
+        // Silueta de edificios en el fondo
+        ctx.fillStyle = '#7dd3fc';
+        for (let i = 0; i < 7; i++) {
+          const bx = i * 60 - ((frames * 0.3) % 60);
+          ctx.fillRect(bx, canvas.height - GROUND_HEIGHT - 65, 45, 65);
+        }
+
+        // Suelo
+        ctx.fillStyle = '#ded895';
+        ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+
+        // Césped del suelo
+        ctx.fillStyle = '#4ade80';
+        ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, 14);
+        ctx.strokeStyle = '#15803d';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, canvas.height - GROUND_HEIGHT, canvas.width, 14);
+
+        // Patrón en el suelo
+        ctx.strokeStyle = '#ca8a04';
+        ctx.lineWidth = 2;
+        const groundShift = (frames * 2.2) % 20;
+        for (let x = -20; x < canvas.width + 20; x += 20) {
+          ctx.beginPath();
+          ctx.moveTo(x - groundShift, canvas.height - GROUND_HEIGHT + 14);
+          ctx.lineTo(x - groundShift + 10, canvas.height);
+          ctx.stroke();
+        }
+      }
+    };
+
+    function gameOver() {
+      if (currentState === STATES.GAMEOVER) return;
+      currentState = STATES.GAMEOVER;
+      playSound('hit');
+    }
+
+    function resetGame() {
+      bird.reset();
+      pipes.reset();
+      score = 0;
+      frames = 0;
+      currentState = STATES.START;
+    }
+
+    function handleAction() {
+      initAudio();
+      if (currentState === STATES.START) {
+        currentState = STATES.PLAYING;
+        bird.flap();
+      } else if (currentState === STATES.PLAYING) {
+        bird.flap();
+      } else if (currentState === STATES.GAMEOVER) {
+        resetGame();
+      }
+    }
+
+    // Eventos de controles
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        handleAction();
+      } else if (e.code === 'KeyR') {
+        resetGame();
+      }
+    });
+
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handleAction();
+    });
+
+    // Bucle principal del juego
+    function loop() {
+      background.draw();
+      pipes.update();
+      pipes.draw();
+      bird.update();
+      bird.draw();
+
+      // UI y marcadores
+      if (currentState === STATES.PLAYING) {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.font = 'bold 38px Impact, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeText(score, canvas.width / 2, 60);
+        ctx.fillText(score, canvas.width / 2, 60);
+      } else if (currentState === STATES.START) {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 4;
+        ctx.font = 'bold 32px Impact, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeText('FLAPPY BIRD', canvas.width / 2, 160);
+        ctx.fillText('FLAPPY BIRD', canvas.width / 2, 160);
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 3;
+        ctx.font = 'bold 18px "Segoe UI", sans-serif';
+        ctx.strokeText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, 330);
+        ctx.fillText('¡Haz clic o pulsa ESPACIO!', canvas.width / 2, 330);
+
+        ctx.font = '14px "Segoe UI", sans-serif';
+        ctx.fillStyle = '#334155';
+        ctx.fillText(`Récord actual: ${highScore}`, canvas.width / 2, 360);
+      } else if (currentState === STATES.GAMEOVER) {
+        // Modal de Game Over
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.beginPath();
+        ctx.roundRect(40, 150, canvas.width - 80, 220, 16);
+        ctx.fill();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ef4444';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.font = 'bold 28px Impact, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeText('¡GAME OVER!', canvas.width / 2, 195);
+        ctx.fillText('¡GAME OVER!', canvas.width / 2, 195);
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 18px "Segoe UI", sans-serif';
+        ctx.fillText(`Puntuación: ${score}`, canvas.width / 2, 245);
+
+        ctx.fillStyle = '#facc15';
+        ctx.fillText(`Mejor Récord: ${highScore}`, canvas.width / 2, 275);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '13px "Segoe UI", sans-serif';
+        ctx.fillText('Pulsa ESPACIO o Clic para reintentar', canvas.width / 2, 325);
+      }
+
+      frames++;
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
 </body>
 </html>
